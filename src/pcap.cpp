@@ -14,8 +14,8 @@
 #include <algorithm>
 
 namespace pcap {
-    std::vector<std::byte> to_byte_vector(std::string file_path, unsigned int byte_start_index, unsigned int num_of_bytes) {
-        if (!std::filesystem::exists(file_path)) {
+    std::vector<std::byte> to_byte_vector(std::fstream &file_stream, unsigned int byte_start_index, unsigned int num_of_bytes) {
+        /* if (!std::filesystem::exists(file_path)) {
             throw std::invalid_argument("File '" + file_path + "' does not exist.");
         }
         std::fstream s{file_path, std::ios::in | std::ios::binary};
@@ -26,32 +26,25 @@ namespace pcap {
             + std::to_string(byte_start_index) + "goes outside the file.";
 
             throw std::invalid_argument(err_msg);
-        } 
+        }  */
 
         std::vector<std::byte> result(num_of_bytes);
+        file_stream.seekg(byte_start_index);
+        file_stream.read(reinterpret_cast<char*>(&result.front()), num_of_bytes);
 
         //Check if file can be opened.
-        if (!s.is_open()) {
+        /* if (!s.is_open()) {
             std::cerr << "Failed to open '" << file_path << "'" << '\n';
         } else {
             s.seekg(byte_start_index);
             s.read(reinterpret_cast<char*>(&result.front()), num_of_bytes);
-        }
+        } */
 
         return result;
     }
 
-    pcap::Pcap_Header populate_header(std::vector<std::byte> header_vec) {
-        /* if (!std::filesystem::exists(file_path)) {
-            throw std::invalid_argument("File '" + file_path + "' does not exist.");
-        }
-        std::fstream fs{file_path, std::ios::in | std::ios::binary}; */
+    pcap::Pcap_Header populate_pcap_file_header(std::vector<std::byte> header_vec) {
         pcap::Pcap_Header header;
-
-        /* //Check if file can be opened.
-        if (!fs.is_open()) {
-            std::cerr << "Failed to open '" << file_path << "'" << '\n';
-        } */
 
         //Determine endianness.
         unsigned int first_byte = std::to_integer<unsigned int>(header_vec[0]);
@@ -94,7 +87,14 @@ namespace pcap {
 
         //Setting SnapLen.
         std::vector<std::byte> snaplen_vec = std::vector<std::byte>(header_vec.begin() + 16, header_vec.begin() + 20);
-        if (std::endian::native == header.data_endianness) {
+        std::vector<std::byte> reversed_snaplen_vec = snaplen_vec;
+
+        std::reverse(reversed_snaplen_vec.begin(), reversed_snaplen_vec.end());
+        
+        header.SnapLen = std::to_integer<uint8_t>(reversed_snaplen_vec[0]) << 24 | std::to_integer<uint8_t>(reversed_snaplen_vec[1]) << 16 | std::to_integer<uint8_t>(reversed_snaplen_vec[2]) << 8 | std::to_integer<uint8_t>(reversed_snaplen_vec[3]);
+
+        //Behövs stycket ens nedan?
+        /* if (std::endian::native == header.data_endianness) { //Varför fungerar inte std::endian::native != header.data_endianness ?
             //Flip byte order in vector.
             std::vector<std::byte> reversed_snaplen_vec = snaplen_vec;
             std::reverse(reversed_snaplen_vec.begin(), reversed_snaplen_vec.end());
@@ -102,7 +102,7 @@ namespace pcap {
         } else {
             //No need to flip byte order, std::endian::native == header.data_endianness.
             header.SnapLen = std::to_integer<uint8_t>(snaplen_vec[0]) << 24 | std::to_integer<uint8_t>(snaplen_vec[1]) << 16 | std::to_integer<uint8_t>(snaplen_vec[2]) << 8 | std::to_integer<uint8_t>(snaplen_vec[3]);
-        }
+        } */
 
         return header;
     }
