@@ -20,9 +20,9 @@ namespace pcap {
     };
 
     std::vector<uint8_t> to_byte_vector(std::fstream &file_stream, unsigned int byte_start_index, unsigned int num_of_bytes);
-    const pcap::Pcap_File_Header & populate_pcap_file_header(const std::vector<uint8_t> &header_vec);
+    const pcap::Pcap_File_Header &populate_pcap_file_header(const std::vector<uint8_t> &header_vec);
 
-    std::string byte_vec_to_hex_str(std::vector<std::byte> &b_vec);
+    //std::string byte_vec_to_hex_str(std::vector<std::byte> &b_vec);
     std::string uint32_t_as_hex_str(uint32_t num);
 }
 
