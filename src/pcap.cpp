@@ -28,19 +28,24 @@ namespace pcap {
         return *file_header;
     }
 
+    const pcap::Pcap_Record_Header &populate_pcap_record_header(const std::vector<uint8_t> &record_header_vec) {
+        auto record_header = reinterpret_cast<const pcap::Pcap_Record_Header*>(&record_header_vec[0]);
+        return *record_header;
+    }
+
     std::string uint32_t_as_hex_str(uint32_t num) {
         std::stringstream ss;
         ss << std::hex << num;
         return ss.str();
     }
 
-    std::string human_readable_pcap_file_header(pcap::Pcap_File_Header &header) {
+    std::string human_readable_pcap_file_header(pcap::Pcap_File_Header &file_header) {
         std::stringstream hs;
         std::endian data_endianness;
         int ts_decimal_places = 0;
 
         //Determine endianness and ts resolution (decimal places).
-        switch (header.magic_number) {
+        switch (file_header.magic_number) {
             case 0xa1b2c3d4:
                 data_endianness = std::endian::little; //change to little
                 ts_decimal_places = 6;
@@ -58,30 +63,30 @@ namespace pcap {
                 ts_decimal_places = 9;
                 break;
             default:
-                hs << "Unable to determine ts resolution and data endianness. Value: " << pcap::uint32_t_as_hex_str(header.magic_number) << " not recognized." << '\n';
+                hs << "Unable to determine ts resolution and data endianness. Value: " << pcap::uint32_t_as_hex_str(file_header.magic_number) << " not recognized." << '\n';
                 break;
         }
 
-        hs << "magic_num: " << pcap::uint32_t_as_hex_str(header.magic_number) << '\n';
+        hs << "magic_num: " << pcap::uint32_t_as_hex_str(file_header.magic_number) << '\n';
 
         //Swap check.
         if (std::endian::native != data_endianness) {
-            header.major_version = __builtin_bswap16(header.major_version);
-            header.minor_version = __builtin_bswap16(header.minor_version);
+            file_header.major_version = __builtin_bswap16(file_header.major_version);
+            file_header.minor_version = __builtin_bswap16(file_header.minor_version);
 
-            header.SnapLen = __builtin_bswap32(header.SnapLen);
-            header.LinkType = __builtin_bswap16(header.LinkType);
+            file_header.SnapLen = __builtin_bswap32(file_header.SnapLen);
+            file_header.LinkType = __builtin_bswap16(file_header.LinkType);
         }
 
-        hs << "major_version: " << header.major_version << '\n';
-        hs << "minor_version: " << header.minor_version << '\n';
+        hs << "major_version: " << file_header.major_version << '\n';
+        hs << "minor_version: " << file_header.minor_version << '\n';
 
-        hs << "Reserved_1: " << header.Reserved_1 << '\n';
-        hs << "Reserved_2: " << header.Reserved_2 << '\n';
+        hs << "Reserved_1: " << file_header.Reserved_1 << '\n';
+        hs << "Reserved_2: " << file_header.Reserved_2 << '\n';
 
-        hs << "SnapLen: " << header.SnapLen << '\n';
+        hs << "SnapLen: " << file_header.SnapLen << '\n';
 
-        hs << "LinkType: " << header.LinkType << '\n';
+        hs << "LinkType: " << file_header.LinkType << '\n';
         
         switch (data_endianness) {
             case std::endian::little:
@@ -95,5 +100,14 @@ namespace pcap {
         hs << "Timestamp resolution (decimal places): " << ts_decimal_places << '\n';
         
         return hs.str();
+    }
+
+    std::string human_readable_pcap_record_header(pcap::Pcap_Record_Header &record_header, int ts_decimal_places) {
+        std::stringstream rs;
+        rs << "Timestamp (Unix): " << record_header.ts_seconds << "." << std::setw(ts_decimal_places) << std::setfill('0') << record_header.ts_frac << '\n';
+        rs << "CapLen: " << record_header.CapLen << '\n';
+        rs << "OrigLen: " << record_header.OrigLen << '\n';
+
+        return rs.str();
     }
 }

@@ -3,11 +3,17 @@
 #include <cstddef>
 #include <bit>
 #include <fstream>
+#include <array>
 
 #ifndef PCAP_H
 #define PCAP_H
 
 namespace pcap {
+    enum
+    {
+    MAX_FRAME_SIZE = 1536
+    };
+
     struct Pcap_File_Header {
         uint32_t magic_number;
         uint16_t major_version;
@@ -18,7 +24,7 @@ namespace pcap {
         uint32_t LinkType;
     };
 
-    struct Pcap_Packet_Record {
+    struct Pcap_Record_Header {
         uint32_t ts_seconds;
 
         //Fractional part of timestamp (after decimal sign/point).
@@ -33,13 +39,20 @@ namespace pcap {
         uint32_t OrigLen;
     };
 
+    struct Pcap_Record {
+        pcap::Pcap_Record_Header header;
+        std::array<uint8_t, MAX_FRAME_SIZE> frame; //aka Packet Data field.
+    };
+
     std::vector<uint8_t> to_byte_vector(std::fstream &file_stream, unsigned int byte_start_index, unsigned int num_of_bytes);
     const pcap::Pcap_File_Header &populate_pcap_file_header(const std::vector<uint8_t> &header_vec);
+    const pcap::Pcap_Record_Header &populate_pcap_record_header(const std::vector<uint8_t> &record_header_vec);
 
     //std::string byte_vec_to_hex_str(std::vector<std::byte> &b_vec);
     std::string uint32_t_as_hex_str(uint32_t num);
 
-    std::string human_readable_pcap_file_header(pcap::Pcap_File_Header &header);
+    std::string human_readable_pcap_file_header(pcap::Pcap_File_Header &file_header);
+    std::string human_readable_pcap_record_header(pcap::Pcap_Record_Header &record_header, int ts_decimal_places);
 }
 
 #endif
