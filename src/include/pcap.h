@@ -18,11 +18,28 @@ namespace pcap {
         uint32_t LinkType;
     };
 
+    struct Pcap_Packet_Record {
+        uint32_t ts_seconds;
+
+        //Fractional part of timestamp (after decimal sign/point).
+        uint32_t ts_frac;
+
+        /*Number of octets/bytes captured from the packet (i.e. length of Packet Data Field).
+          Will be std::min(OrigLen, SnapLen).*/
+        uint32_t CapLen;
+
+        /*Actual length of packet when transmitted on the network, can be different from CapLen if
+          packet was truncated by capture process.*/
+        uint32_t OrigLen;
+    };
+
     std::vector<uint8_t> to_byte_vector(std::fstream &file_stream, unsigned int byte_start_index, unsigned int num_of_bytes);
     const pcap::Pcap_File_Header &populate_pcap_file_header(const std::vector<uint8_t> &header_vec);
 
     //std::string byte_vec_to_hex_str(std::vector<std::byte> &b_vec);
     std::string uint32_t_as_hex_str(uint32_t num);
+
+    std::string human_readable_pcap_file_header(pcap::Pcap_File_Header &header);
 }
 
 #endif

@@ -31,26 +31,24 @@ int main() {
     switch (h.magic_number) {
         case 0xa1b2c3d4:
             data_endianness = std::endian::little; //change to little
-            ts_decimal_places = 6; //change to 9?
+            ts_decimal_places = 6;
             break;
         case 0xd4c3b2a1:
             data_endianness = std::endian::big; //change to big
-            ts_decimal_places = 6; //change to 9?
+            ts_decimal_places = 6;
             break;
         case 0xa1b23c4d:
             data_endianness = std::endian::little; //change to little
-            ts_decimal_places = 9; //change to 6?
+            ts_decimal_places = 9;
             break;
         case 0x4d3cb2a1:
             data_endianness = std::endian::big; //change to big
-            ts_decimal_places = 9; //change to 6?
+            ts_decimal_places = 9;
             break;
         default:
             std::cerr << "Unable to determine ts resolution and data endianness. Value: " << pcap::uint32_t_as_hex_str(h.magic_number) << " not recognized." << '\n';
             break;
     }
-    
-    std::cout << "magic_num: " << pcap::uint32_t_as_hex_str(h.magic_number) << '\n';
 
     //Swap check.
     if (std::endian::native != data_endianness) {
@@ -62,29 +60,7 @@ int main() {
         h.LinkType = __builtin_bswap16(h.LinkType);
     }
 
-    std::cout << "major_version: " << h.major_version << '\n';
-    std::cout << "minor_version: " << h.minor_version << '\n';
-
-    std::cout << "Reserved_1: " << h.Reserved_1 << '\n';
-    std::cout << "Reserved_2: " << h.Reserved_2 << '\n';
-
-    std::cout << "SnapLen: " << h.SnapLen << '\n';
-
-    std::cout << "LinkType: " << h.LinkType << '\n';
-    
-    switch (data_endianness) {
-        case std::endian::little:
-            std::cout << "Data endianness: little-endian" << '\n';
-            break;
-        case std::endian::big:
-            std::cout << "Data endianness: big-endian" << '\n';
-            break;
-    }
-
-    std::cout << "Timestamp resolution (decimal places): " << ts_decimal_places << '\n';
-    
-    //std::cout << "Byte vector size/length: " << header_vector.size() << '\n';
-    //std::cout << "Read bytes as hex string: " << pcap::byte_vec_to_hex_str(header_vector) << '\n';
+    std::cout << pcap::human_readable_pcap_file_header(h);
 
     return 0;
 }
