@@ -70,7 +70,7 @@ int main() {
 
     std::cout << "SnapLen: " << h.SnapLen << '\n';
 
-    std::cout << "LinkType: " << h.LinkType << '\n'; //Shows as '0', should be '1'. Why?!!!
+    std::cout << "LinkType: " << h.LinkType << '\n';
     
     switch (data_endianness) {
         case std::endian::little:

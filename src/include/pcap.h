@@ -12,11 +12,10 @@ namespace pcap {
         uint32_t magic_number;
         uint16_t major_version;
         uint16_t minor_version;
-        uint32_t Reserved_1;
+        int32_t Reserved_1;
         uint32_t Reserved_2;
         uint32_t SnapLen;
-        uint16_t FCS;
-        uint16_t LinkType;
+        uint32_t LinkType;
     };
 
     std::vector<uint8_t> to_byte_vector(std::fstream &file_stream, unsigned int byte_start_index, unsigned int num_of_bytes);
