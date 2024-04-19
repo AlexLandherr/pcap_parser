@@ -30,8 +30,7 @@ namespace pcap {
         //Fractional part of timestamp (after decimal sign/point).
         uint32_t ts_frac;
 
-        /*Number of octets/bytes captured from the packet (i.e. length of Packet Data Field).
-          Will be std::min(OrigLen, SnapLen).*/
+        /*Number of octets/bytes captured from the packet (i.e. length of Packet Data Field).*/
         uint32_t CapLen;
 
         /*Actual length of packet when transmitted on the network, can be different from CapLen if

@@ -11,6 +11,7 @@
 #include <sstream>
 #include <fstream>
 #include <stdexcept>
+#include <algorithm>
 
 int main() {
     //variables for timestamp resolution and data endianness.
@@ -78,6 +79,9 @@ int main() {
         rh.OrigLen = __builtin_bswap32(rh.OrigLen);
     }
 
+    //Use std::min() to check/set CapLen?
+    rh.CapLen = std::min(rh.CapLen, static_cast<uint32_t>(pcap::MAX_FRAME_SIZE));
+
     std::cout << "Record: 0 (or 1)" << '\n';
     std::cout << pcap::human_readable_pcap_record_header(rh, ts_decimal_places);
     
@@ -96,6 +100,9 @@ int main() {
             rh.CapLen = __builtin_bswap32(rh.CapLen);
             rh.OrigLen = __builtin_bswap32(rh.OrigLen);
         }
+
+        //Use std::min() to check/set CapLen?
+        rh.CapLen = std::min(rh.OrigLen, fh.SnapLen);
 
         //Populate record.
         pcap::Pcap_Record r;
