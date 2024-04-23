@@ -12,8 +12,34 @@
 #include <fstream>
 #include <stdexcept>
 #include <algorithm>
+#include <cstdio>
 
 int main() {
+    /* std::FILE* f = std::fopen("pcap_files/tcp_1.pcap", "rb");
+    if (f == NULL) {
+        std::perror("Error opening file!");
+        return 1;
+    }
+
+    pcap::Pcap_File_Header fh_buf;
+
+    const std::size_t n = std::fread(&fh_buf, sizeof(pcap::Pcap_File_Header), 1, f);
+    if (n != 1) {
+        std::perror("fread failed!");
+        return 1;
+    }
+
+    try {
+        std::string fname{"pcap_files/tcp_1.pcap"};
+        pcap::Pcap_File_Header fh = pcap::get_pcap_file_header(fname);
+
+        std::cout << pcap::human_readable_pcap_file_header(fh);
+    } catch (const std::invalid_argument &ex) {
+        std::cerr << ex.what() << '\n';
+    } catch (const std::exception& ex) {
+        std::cerr << ex.what() << '\n';
+    } */
+    
     //variables for timestamp resolution and data endianness.
     int ts_decimal_places = 0;
     std::endian data_endianness;
@@ -25,8 +51,9 @@ int main() {
     } 
 
     //Add try-catch statement later.
-    auto header_vector = pcap::to_byte_vector(fs, 0, 24);
-    pcap::Pcap_File_Header fh = pcap::populate_pcap_file_header(header_vector);
+    /* auto header_vector = pcap::to_byte_vector(fs, 0, 24);
+    pcap::Pcap_File_Header fh = pcap::populate_pcap_file_header(header_vector); */
+    pcap::Pcap_File_Header fh = pcap::get_pcap_file_header(filename);
 
     //Determine endianness and ts resolution (decimal places).
     switch (fh.magic_number) {
@@ -79,7 +106,7 @@ int main() {
         rh.OrigLen = __builtin_bswap32(rh.OrigLen);
     }
 
-    //Use std::min() to check/set CapLen?
+    //Use std::min() to check/set CapLen.
     rh.CapLen = std::min(rh.CapLen, static_cast<uint32_t>(pcap::MAX_FRAME_SIZE));
 
     std::cout << "Record: 0 (or 1)" << '\n';

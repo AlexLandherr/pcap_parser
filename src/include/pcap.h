@@ -47,6 +47,8 @@ namespace pcap {
     const pcap::Pcap_File_Header &populate_pcap_file_header(const std::vector<uint8_t> &header_vec);
     const pcap::Pcap_Record_Header &populate_pcap_record_header(const std::vector<uint8_t> &record_header_vec);
 
+    pcap::Pcap_File_Header get_pcap_file_header(std::string &file_str);
+
     //std::string byte_vec_to_hex_str(std::vector<std::byte> &b_vec);
     std::string uint32_t_as_hex_str(uint32_t num);
 

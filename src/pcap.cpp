@@ -12,6 +12,7 @@
 #include <filesystem>
 #include <bit>
 #include <algorithm>
+#include <cstdio>
 
 namespace pcap {
     std::vector<uint8_t> to_byte_vector(std::fstream &file_stream, unsigned int byte_start_index, unsigned int num_of_bytes) {
@@ -31,6 +32,26 @@ namespace pcap {
     const pcap::Pcap_Record_Header &populate_pcap_record_header(const std::vector<uint8_t> &record_header_vec) {
         auto record_header = reinterpret_cast<const pcap::Pcap_Record_Header*>(&record_header_vec[0]);
         return *record_header;
+    }
+
+    pcap::Pcap_File_Header get_pcap_file_header(std::string &file_str) {
+        std::FILE* f = std::fopen(file_str.c_str(), "rb");
+        if (f == NULL) {
+            throw std::invalid_argument("Error opening file!");
+            /* std::perror("Error opening file!");
+            return 1; */
+        }
+
+        pcap::Pcap_File_Header fh_buf;
+
+        const std::size_t n = std::fread(&fh_buf, sizeof(pcap::Pcap_File_Header), 1, f);
+        if (n != 1) {
+            std::perror("std::fread failed!");
+            std::exit(EXIT_FAILURE);
+            //return 1;
+        }
+
+        return fh_buf;
     }
 
     std::string uint32_t_as_hex_str(uint32_t num) {
