@@ -50,10 +50,10 @@ namespace pcap {
     pcap::Pcap_File_Header get_pcap_file_header(std::string &file_str);
 
     //std::string byte_vec_to_hex_str(std::vector<std::byte> &b_vec);
-    std::string uint32_t_as_hex_str(uint32_t num);
+    std::string uint32_t_as_hex_str(uint32_t &num);
 
     std::string human_readable_pcap_file_header(pcap::Pcap_File_Header &file_header);
-    std::string human_readable_pcap_record_header(pcap::Pcap_Record_Header &record_header, int ts_decimal_places);
+    std::string human_readable_pcap_record_header(pcap::Pcap_Record_Header &record_header, int &ts_decimal_places);
 }
 
 #endif

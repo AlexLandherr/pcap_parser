@@ -54,7 +54,7 @@ namespace pcap {
         return fh_buf;
     }
 
-    std::string uint32_t_as_hex_str(uint32_t num) {
+    std::string uint32_t_as_hex_str(uint32_t &num) {
         std::stringstream ss;
         ss << std::hex << num;
         return ss.str();
@@ -123,7 +123,7 @@ namespace pcap {
         return hs.str();
     }
 
-    std::string human_readable_pcap_record_header(pcap::Pcap_Record_Header &record_header, int ts_decimal_places) {
+    std::string human_readable_pcap_record_header(pcap::Pcap_Record_Header &record_header, int &ts_decimal_places) {
         std::stringstream rs;
         rs << "Timestamp (Unix): " << record_header.ts_seconds << "." << std::setw(ts_decimal_places) << std::setfill('0') << record_header.ts_frac << '\n';
         rs << "CapLen: " << record_header.CapLen << '\n';
