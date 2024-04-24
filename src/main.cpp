@@ -15,31 +15,6 @@
 #include <cstdio>
 
 int main() {
-    /* std::FILE* f = std::fopen("pcap_files/tcp_1.pcap", "rb");
-    if (f == NULL) {
-        std::perror("Error opening file!");
-        return 1;
-    }
-
-    pcap::Pcap_File_Header fh_buf;
-
-    const std::size_t n = std::fread(&fh_buf, sizeof(pcap::Pcap_File_Header), 1, f);
-    if (n != 1) {
-        std::perror("fread failed!");
-        return 1;
-    }
-
-    try {
-        std::string fname{"pcap_files/tcp_1.pcap"};
-        pcap::Pcap_File_Header fh = pcap::get_pcap_file_header(fname);
-
-        std::cout << pcap::human_readable_pcap_file_header(fh);
-    } catch (const std::invalid_argument &ex) {
-        std::cerr << ex.what() << '\n';
-    } catch (const std::exception& ex) {
-        std::cerr << ex.what() << '\n';
-    } */
-    
     //variables for timestamp resolution and data endianness.
     int ts_decimal_places = 0;
     std::endian data_endianness;
