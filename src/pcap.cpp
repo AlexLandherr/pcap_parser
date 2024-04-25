@@ -34,12 +34,12 @@ namespace pcap {
         return *record_header;
     }
 
-    pcap::Pcap_File_Header get_pcap_file_header(std::string &file_str) {
+    /* pcap::Pcap_File_Header get_pcap_file_header(std::string &file_str) {
         std::FILE* f = std::fopen(file_str.c_str(), "rb");
         if (f == NULL) {
             throw std::invalid_argument("Error opening file!");
-            /* std::perror("Error opening file!");
-            return 1; */
+            std::perror("Error opening file!");
+            return 1;
         }
 
         pcap::Pcap_File_Header fh_buf;
@@ -52,6 +52,31 @@ namespace pcap {
         }
 
         return fh_buf;
+    } */
+
+    pcap::Pcap_File_Header get_pcap_file_header(std::FILE* f_stream) {
+        pcap::Pcap_File_Header fh_buf;
+
+        const std::size_t n = std::fread(&fh_buf, sizeof(pcap::Pcap_File_Header), 1, f_stream);
+        if (n != 1) {
+            std::perror("std::fread failed!");
+            std::exit(EXIT_FAILURE);
+            //return 1;
+        }
+
+        return fh_buf;
+    }
+
+    pcap::Pcap_Record_Header get_pcap_record_header(std::FILE* f_stream) {
+        pcap::Pcap_Record_Header rh_buf;
+
+        const std::size_t n = std::fread(&rh_buf, sizeof(pcap::Pcap_Record_Header), 1, f_stream);
+        if (n != 1) {
+            std::perror("std::fread failed!");
+            std::exit(EXIT_FAILURE);
+        }
+
+        return rh_buf;
     }
 
     std::string uint32_t_as_hex_str(uint32_t &num) {
@@ -60,7 +85,7 @@ namespace pcap {
         return ss.str();
     }
 
-    std::string human_readable_pcap_file_header(pcap::Pcap_File_Header &file_header) {
+    std::string human_readable_pcap_file_header(pcap::Pcap_File_Header file_header) {
         std::stringstream hs;
         std::endian data_endianness;
         int ts_decimal_places = 0;

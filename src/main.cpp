@@ -20,15 +20,24 @@ int main() {
     std::endian data_endianness;
 
     std::string filename{"pcap_files/tcp_1.pcap"};
-    std::fstream fs{filename, std::ios::in | std::ios::binary};
+    /* std::fstream fs{filename, std::ios::in | std::ios::binary};
     if (!fs.is_open()) {
         std::cerr << "Failed to open '" << filename << "'" << '\n';
-    } 
+    } */
 
     //Add try-catch statement later.
     /* auto header_vector = pcap::to_byte_vector(fs, 0, 24);
     pcap::Pcap_File_Header fh = pcap::populate_pcap_file_header(header_vector); */
-    pcap::Pcap_File_Header fh = pcap::get_pcap_file_header(filename);
+
+    //File stream for entire program.
+    std::FILE* f_stream = std::fopen(filename.c_str(), "rb");
+    if (f_stream == NULL) {
+        std::perror("Error opening file!");
+        return 1;
+    }
+
+
+    pcap::Pcap_File_Header fh = pcap::get_pcap_file_header(f_stream);
 
     //Determine endianness and ts resolution (decimal places).
     switch (fh.magic_number) {
@@ -67,11 +76,12 @@ int main() {
     std::cout << "****" << '\n';
 
     //Print out Packet Records in loop.
-    //Read record header as vector of bytes.
-    auto record_header_vec = pcap::to_byte_vector(fs, 24, 16);
+    //Read first record header as vector of bytes.
+    //auto record_header_vec = pcap::to_byte_vector(fs, 24, 16);
 
-    //Populate record header.
-    pcap::Pcap_Record_Header rh = pcap::populate_pcap_record_header(record_header_vec);
+    //Populate first record header.
+    //pcap::Pcap_Record_Header rh = pcap::populate_pcap_record_header(record_header_vec);
+    pcap::Pcap_Record_Header rh = pcap::get_pcap_record_header(f_stream);
 
     //Swap check.
     if (std::endian::native != data_endianness) {
