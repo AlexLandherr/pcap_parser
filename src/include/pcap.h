@@ -44,6 +44,12 @@ namespace pcap {
         std::array<uint8_t, MAX_FRAME_SIZE> frame; //aka Packet Data field.
     };
 
+    struct Eth_Frame_Header {
+        std::array<uint8_t, 6> dst_mac_addr;
+        std::array<uint8_t, 6> src_mac_addr;
+        uint16_t eth_type;
+    };
+
     std::vector<uint8_t> to_byte_vector(std::fstream &file_stream, unsigned int byte_start_index, unsigned int num_of_bytes);
     const pcap::Pcap_File_Header &populate_pcap_file_header(const std::vector<uint8_t> &header_vec);
     const pcap::Pcap_Record_Header &populate_pcap_record_header(const std::vector<uint8_t> &record_header_vec);
@@ -51,6 +57,7 @@ namespace pcap {
     //pcap::Pcap_File_Header get_pcap_file_header(std::string &file_str);
     pcap::Pcap_File_Header get_pcap_file_header(std::FILE* f_stream);
     pcap::Pcap_Record_Header get_pcap_record_header(std::FILE* f_stream);
+    pcap::Pcap_Record get_pcap_record(std::FILE* f_stream, pcap::Pcap_Record_Header record_header);
 
     //std::string byte_vec_to_hex_str(std::vector<std::byte> &b_vec);
     std::string uint32_t_as_hex_str(uint32_t &num);

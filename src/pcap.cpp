@@ -79,6 +79,19 @@ namespace pcap {
         return rh_buf;
     }
 
+    pcap::Pcap_Record get_pcap_record(std::FILE* f_stream, pcap::Pcap_Record_Header record_header) {
+        pcap::Pcap_Record r_buf;
+        r_buf.header = record_header;
+
+        const std::size_t n = std::fread(&r_buf.frame, sizeof(record_header.CapLen), 1, f_stream);
+        if (n != 1) {
+            std::perror("std::fread failed!");
+            std::exit(EXIT_FAILURE);
+        }
+
+        return r_buf;
+    }
+
     std::string uint32_t_as_hex_str(uint32_t &num) {
         std::stringstream ss;
         ss << std::hex << num;
@@ -150,8 +163,8 @@ namespace pcap {
 
     std::string human_readable_pcap_record_header(pcap::Pcap_Record_Header &record_header, int &ts_decimal_places) {
         std::stringstream rs;
-        rs << "Timestamp (Unix): " << record_header.ts_seconds << "." << std::setw(ts_decimal_places) << std::setfill('0') << record_header.ts_frac << '\n';
-        rs << "CapLen: " << record_header.CapLen << '\n';
+        rs << "TS (Unix): " << record_header.ts_seconds << "." << std::setw(ts_decimal_places) << std::setfill('0') << record_header.ts_frac << " ";
+        rs << "CapLen: " << record_header.CapLen << " ";
         rs << "OrigLen: " << record_header.OrigLen << '\n';
 
         return rs.str();

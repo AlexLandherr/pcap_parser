@@ -94,8 +94,17 @@ int main() {
     //Use std::min() to check/set CapLen.
     rh.CapLen = std::min(rh.CapLen, static_cast<uint32_t>(pcap::MAX_FRAME_SIZE));
 
+    //Populating the full record struct by getting the Packet Data field from a Packet Record.
+    pcap::Pcap_Record record = pcap::get_pcap_record(f_stream, rh);
+
     std::cout << "Record: 0 (or 1)" << '\n';
-    std::cout << pcap::human_readable_pcap_record_header(rh, ts_decimal_places);
+    std::cout << pcap::human_readable_pcap_record_header(record.header, ts_decimal_places);
+
+    //Swap check.
+    if (std::endian::native != std::endian::big) {
+        //Swap order of bytes in 'frame' array in record struct?
+        std::reverse(record.frame.begin(), record.frame.end());
+    }
     
     /* int count = 0;
     while (true) {
