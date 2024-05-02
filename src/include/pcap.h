@@ -58,6 +58,7 @@ namespace pcap {
     pcap::Pcap_File_Header get_pcap_file_header(std::FILE* f_stream);
     pcap::Pcap_Record_Header get_pcap_record_header(std::FILE* f_stream);
     pcap::Pcap_Record get_pcap_record(std::FILE* f_stream, pcap::Pcap_Record_Header record_header);
+    pcap::Eth_Frame_Header get_eth_frame_header(pcap::Pcap_Record &record);
 
     //std::string byte_vec_to_hex_str(std::vector<std::byte> &b_vec);
     std::string uint32_t_as_hex_str(uint32_t &num);

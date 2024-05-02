@@ -99,12 +99,6 @@ int main() {
 
     std::cout << "Record: 0 (or 1)" << '\n';
     std::cout << pcap::human_readable_pcap_record_header(record.header, ts_decimal_places);
-
-    //Swap check.
-    if (std::endian::native != std::endian::big) {
-        //Swap order of bytes in 'frame' array in record struct?
-        std::reverse(record.frame.begin(), record.frame.end());
-    }
     
     /* int count = 0;
     while (true) {

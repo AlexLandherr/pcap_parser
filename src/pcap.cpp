@@ -13,6 +13,7 @@
 #include <bit>
 #include <algorithm>
 #include <cstdio>
+#include <cstring>
 
 namespace pcap {
     std::vector<uint8_t> to_byte_vector(std::fstream &file_stream, unsigned int byte_start_index, unsigned int num_of_bytes) {
@@ -90,6 +91,13 @@ namespace pcap {
         }
 
         return r_buf;
+    }
+
+    pcap::Eth_Frame_Header get_eth_frame_header(pcap::Pcap_Record &record) {
+        pcap::Eth_Frame_Header eth_fh;
+
+        //Best way to copy bytes from frame array to pcap::Eth_Frame_Header struct.
+        //std::memcpy(eth_fh, record.frame, sizeof(eth_fh));
     }
 
     std::string uint32_t_as_hex_str(uint32_t &num) {
