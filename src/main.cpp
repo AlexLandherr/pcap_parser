@@ -76,11 +76,7 @@ int main() {
     std::cout << "****" << '\n';
 
     //Print out Packet Records in loop.
-    //Read first record header as vector of bytes.
-    //auto record_header_vec = pcap::to_byte_vector(fs, 24, 16);
-
     //Populate first record header.
-    //pcap::Pcap_Record_Header rh = pcap::populate_pcap_record_header(record_header_vec);
     pcap::Pcap_Record_Header rh = pcap::get_pcap_record_header(f_stream);
 
     //Swap check.
@@ -99,6 +95,14 @@ int main() {
 
     std::cout << "Record: 0 (or 1)" << '\n';
     std::cout << pcap::human_readable_pcap_record_header(record.header, ts_decimal_places);
+
+    pcap::Eth_Header eth_header = pcap::get_eth_header(record);
+    if (std::endian::native != std::endian::big) {
+        eth_header.eth_type = __builtin_bswap16(eth_header.eth_type);
+    }
+    std::cout << "dst_mac_addr: " << pcap::mac_address_as_str(eth_header.dst_mac_addr) << '\n';
+    std::cout << "src_mac_addr: " << pcap::mac_address_as_str(eth_header.src_mac_addr) << '\n';
+    std::cout << "eth_type: " << pcap::eth_type_as_hex_str(eth_header.eth_type) << '\n';
     
     /* int count = 0;
     while (true) {

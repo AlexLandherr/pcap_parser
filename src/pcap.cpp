@@ -14,9 +14,10 @@
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
+#include <ios>
 
 namespace pcap {
-    std::vector<uint8_t> to_byte_vector(std::fstream &file_stream, unsigned int byte_start_index, unsigned int num_of_bytes) {
+    /* std::vector<uint8_t> to_byte_vector(std::fstream &file_stream, unsigned int byte_start_index, unsigned int num_of_bytes) {
         std::vector<uint8_t> result(num_of_bytes);
 
         file_stream.seekg(byte_start_index);
@@ -33,7 +34,7 @@ namespace pcap {
     const pcap::Pcap_Record_Header &populate_pcap_record_header(const std::vector<uint8_t> &record_header_vec) {
         auto record_header = reinterpret_cast<const pcap::Pcap_Record_Header*>(&record_header_vec[0]);
         return *record_header;
-    }
+    } */
 
     /* pcap::Pcap_File_Header get_pcap_file_header(std::string &file_str) {
         std::FILE* f = std::fopen(file_str.c_str(), "rb");
@@ -80,11 +81,11 @@ namespace pcap {
         return rh_buf;
     }
 
-    pcap::Pcap_Record get_pcap_record(std::FILE* f_stream, pcap::Pcap_Record_Header record_header) {
+    pcap::Pcap_Record get_pcap_record(std::FILE* f_stream, pcap::Pcap_Record_Header &record_header) {
         pcap::Pcap_Record r_buf;
         r_buf.header = record_header;
 
-        const std::size_t n = std::fread(&r_buf.frame, sizeof(record_header.CapLen), 1, f_stream);
+        const std::size_t n = std::fread(&r_buf.frame, record_header.CapLen, 1, f_stream);
         if (n != 1) {
             std::perror("std::fread failed!");
             std::exit(EXIT_FAILURE);
@@ -93,17 +94,38 @@ namespace pcap {
         return r_buf;
     }
 
-    pcap::Eth_Frame_Header get_eth_frame_header(pcap::Pcap_Record &record) {
-        pcap::Eth_Frame_Header eth_fh;
+    pcap::Eth_Header get_eth_header(pcap::Pcap_Record &record) {
+        pcap::Eth_Header eth_fh;
 
-        //Best way to copy bytes from frame array to pcap::Eth_Frame_Header struct.
-        //std::memcpy(eth_fh, record.frame, sizeof(eth_fh));
+        //.
+        std::memcpy(&eth_fh, &record.frame, sizeof(eth_fh));
+
+        return eth_fh;
     }
 
     std::string uint32_t_as_hex_str(uint32_t &num) {
         std::stringstream ss;
         ss << std::hex << num;
         return ss.str();
+    }
+
+    std::string mac_address_as_str(std::array<uint8_t, 6> mac_addr) {
+        std::stringstream mac_s;
+        mac_s << std::hex << std::setw(2) << std::setfill('0') <<
+        (uint16_t)mac_addr[0] << ":" <<
+        (uint16_t)mac_addr[1] << ":" <<
+        (uint16_t)mac_addr[2] << ":" <<
+        (uint16_t)mac_addr[3] << ":" <<
+        (uint16_t)mac_addr[4] << ":" <<
+        (uint16_t)mac_addr[5];
+
+        return mac_s.str();
+    }
+
+    std::string eth_type_as_hex_str(uint16_t &eth_type_num) {
+        std::stringstream eth_s;
+        eth_s << std::hex << std::setw(4) << std::setfill('0') << std::showbase << eth_type_num;
+        return eth_s.str();
     }
 
     std::string human_readable_pcap_file_header(pcap::Pcap_File_Header file_header) {
