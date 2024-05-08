@@ -193,7 +193,7 @@ namespace pcap {
 
     std::string human_readable_pcap_record_header(pcap::Pcap_Record_Header &record_header, int &ts_decimal_places) {
         std::stringstream rs;
-        rs << "TS (Unix): " << record_header.ts_seconds << "." << std::setw(ts_decimal_places) << std::setfill('0') << record_header.ts_frac << " ";
+        rs << "Unix: " << record_header.ts_seconds << "." << std::setw(ts_decimal_places) << std::setfill('0') << record_header.ts_frac << " ";
         rs << "CapLen: " << record_header.CapLen << " ";
         rs << "OrigLen: " << record_header.OrigLen << '\n';
 
