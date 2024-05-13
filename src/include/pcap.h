@@ -48,28 +48,19 @@ namespace pcap {
     struct Eth_Header {
         std::array<uint8_t, 6> dst_mac_addr;
         std::array<uint8_t, 6> src_mac_addr;
-        /* uint8_t dst_mac_addr[6];
-        uint8_t src_mac_addr[6]; */
         uint16_t eth_type;
     };
 
-    /* std::vector<uint8_t> to_byte_vector(std::fstream &file_stream, unsigned int byte_start_index, unsigned int num_of_bytes);
-    const pcap::Pcap_File_Header &populate_pcap_file_header(const std::vector<uint8_t> &header_vec);
-    const pcap::Pcap_Record_Header &populate_pcap_record_header(const std::vector<uint8_t> &record_header_vec); */
-
-    //pcap::Pcap_File_Header get_pcap_file_header(std::string &file_str);
     pcap::Pcap_File_Header get_pcap_file_header(std::FILE* f_stream);
     pcap::Pcap_Record_Header get_pcap_record_header(std::FILE* f_stream);
     pcap::Pcap_Record get_pcap_record(std::FILE* f_stream, pcap::Pcap_Record_Header &record_header);
     pcap::Eth_Header get_eth_header(pcap::Pcap_Record &record);
 
-    //std::string byte_vec_to_hex_str(std::vector<std::byte> &b_vec);
     std::string uint32_t_as_hex_str(uint32_t &num);
-    std::string mac_address_as_str(std::array<uint8_t, 6> mac_addr);
-    std::string eth_type_as_hex_str(uint16_t &eth_type_num);
 
     std::string human_readable_pcap_file_header(pcap::Pcap_File_Header file_header);
     std::string human_readable_pcap_record_header(pcap::Pcap_Record_Header &record_header, int &ts_decimal_places);
+    std::string human_readable_eth_header(pcap::Eth_Header &ethernet_header);
 }
 
 #endif

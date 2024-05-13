@@ -72,37 +72,14 @@ int main() {
         fh.LinkType = __builtin_bswap32(fh.LinkType);
     }
 
+    //Check if LinkType is Ethernet.
+    if (fh.LinkType != 1) {
+        std::cout << "LinkType other than Ethernet detected! Exiting program." << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
     std::cout << pcap::human_readable_pcap_file_header(fh);
     std::cout << "****" << '\n';
-
-    /* //Print out Packet Records in loop.
-    //Populate first record header.
-    pcap::Pcap_Record_Header rh = pcap::get_pcap_record_header(f_stream);
-
-    //Swap check.
-    if (std::endian::native != data_endianness) {
-        rh.ts_seconds = __builtin_bswap32(rh.ts_seconds);
-        rh.ts_frac = __builtin_bswap32(rh.ts_frac);
-        rh.CapLen = __builtin_bswap32(rh.CapLen);
-        rh.OrigLen = __builtin_bswap32(rh.OrigLen);
-    }
-
-    //Use std::min() to check/set CapLen.
-    rh.CapLen = std::min(rh.CapLen, static_cast<uint32_t>(pcap::MAX_FRAME_SIZE));
-
-    //Populating the full record struct by getting the Packet Data field from a Packet Record.
-    pcap::Pcap_Record record = pcap::get_pcap_record(f_stream, rh);
-
-    std::cout << "Record: 0 (or 1)" << '\n';
-    std::cout << pcap::human_readable_pcap_record_header(record.header, ts_decimal_places);
-
-    pcap::Eth_Header eth_header = pcap::get_eth_header(record);
-    if (std::endian::native != std::endian::big) {
-        eth_header.eth_type = __builtin_bswap16(eth_header.eth_type);
-    }
-    std::cout << "dst_mac_addr: " << pcap::mac_address_as_str(eth_header.dst_mac_addr) << '\n';
-    std::cout << "src_mac_addr: " << pcap::mac_address_as_str(eth_header.src_mac_addr) << '\n';
-    std::cout << "eth_type: " << pcap::eth_type_as_hex_str(eth_header.eth_type) << '\n'; */
     
     int count = 0;
     while (true) {
@@ -131,9 +108,23 @@ int main() {
         if (std::endian::native != std::endian::big) {
             eth_header.eth_type = __builtin_bswap16(eth_header.eth_type);
         }
-        std::cout << "dst_mac_addr: " << pcap::mac_address_as_str(eth_header.dst_mac_addr) << '\n';
-        std::cout << "src_mac_addr: " << pcap::mac_address_as_str(eth_header.src_mac_addr) << '\n';
-        std::cout << "eth_type: " << pcap::eth_type_as_hex_str(eth_header.eth_type) << '\n';
+        //Checking EtherType.
+        switch (eth_header.eth_type) {
+            case 0x0800:
+                std::cout << "EtherType: IPv4." << '\n';
+                std::cout << pcap::human_readable_eth_header(eth_header) << '\n';
+                //Eventual printout/extraction of IP packet info.
+                break;
+            case 0x86DD:
+                std::cout << "EtherType: IPv6." << '\n';
+                std::cout << pcap::human_readable_eth_header(eth_header) << '\n';
+                //Eventual printout/extraction of IP packet info.
+                break;
+            default:
+                std::cout << "Default" << '\n';
+                break;
+        }
+        
         std::cout << '\n';
 
         count++;

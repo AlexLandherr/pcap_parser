@@ -17,52 +17,13 @@
 #include <ios>
 
 namespace pcap {
-    /* std::vector<uint8_t> to_byte_vector(std::fstream &file_stream, unsigned int byte_start_index, unsigned int num_of_bytes) {
-        std::vector<uint8_t> result(num_of_bytes);
-
-        file_stream.seekg(byte_start_index);
-        file_stream.read(reinterpret_cast<char*>(&result.front()), num_of_bytes);
-
-        return result;
-    }
-
-    const pcap::Pcap_File_Header &populate_pcap_file_header(const std::vector<uint8_t> &header_vec) {
-        auto file_header = reinterpret_cast<const pcap::Pcap_File_Header*>(&header_vec[0]);
-        return *file_header;
-    }
-
-    const pcap::Pcap_Record_Header &populate_pcap_record_header(const std::vector<uint8_t> &record_header_vec) {
-        auto record_header = reinterpret_cast<const pcap::Pcap_Record_Header*>(&record_header_vec[0]);
-        return *record_header;
-    } */
-
-    /* pcap::Pcap_File_Header get_pcap_file_header(std::string &file_str) {
-        std::FILE* f = std::fopen(file_str.c_str(), "rb");
-        if (f == NULL) {
-            throw std::invalid_argument("Error opening file!");
-            std::perror("Error opening file!");
-            return 1;
-        }
-
-        pcap::Pcap_File_Header fh_buf;
-
-        const std::size_t n = std::fread(&fh_buf, sizeof(pcap::Pcap_File_Header), 1, f);
-        if (n != 1) {
-            std::perror("std::fread failed!");
-            std::exit(EXIT_FAILURE);
-            //return 1;
-        }
-
-        return fh_buf;
-    } */
-
     pcap::Pcap_File_Header get_pcap_file_header(std::FILE* f_stream) {
         pcap::Pcap_File_Header fh_buf;
 
         const std::size_t n = std::fread(&fh_buf, sizeof(pcap::Pcap_File_Header), 1, f_stream);
         if (n != 1) {
             std::perror("std::fread failed!");
-            std::exit(EXIT_FAILURE);
+            std::exit(EXIT_FAILURE); //Use 'return 1' or not?
             //return 1;
         }
 
@@ -75,7 +36,7 @@ namespace pcap {
         const std::size_t n = std::fread(&rh_buf, sizeof(pcap::Pcap_Record_Header), 1, f_stream);
         if (n != 1) {
             std::perror("std::fread failed!");
-            std::exit(EXIT_FAILURE);
+            std::exit(EXIT_FAILURE); //Use 'return 1' or not?
         }
 
         return rh_buf;
@@ -88,7 +49,7 @@ namespace pcap {
         const std::size_t n = std::fread(&r_buf.frame, record_header.CapLen, 1, f_stream);
         if (n != 1) {
             std::perror("std::fread failed!");
-            std::exit(EXIT_FAILURE);
+            std::exit(EXIT_FAILURE); //Use 'return 1' or not?
         }
 
         return r_buf;
@@ -107,25 +68,6 @@ namespace pcap {
         std::stringstream ss;
         ss << std::hex << num;
         return ss.str();
-    }
-
-    std::string mac_address_as_str(std::array<uint8_t, 6> mac_addr) {
-        std::stringstream mac_s;
-        mac_s << std::hex << std::setw(2) << std::setfill('0') <<
-        (uint16_t)mac_addr[0] << ":" <<
-        (uint16_t)mac_addr[1] << ":" <<
-        (uint16_t)mac_addr[2] << ":" <<
-        (uint16_t)mac_addr[3] << ":" <<
-        (uint16_t)mac_addr[4] << ":" <<
-        (uint16_t)mac_addr[5];
-
-        return mac_s.str();
-    }
-
-    std::string eth_type_as_hex_str(uint16_t &eth_type_num) {
-        std::stringstream eth_s;
-        eth_s << std::hex << std::setw(4) << std::setfill('0') << std::showbase << eth_type_num;
-        return eth_s.str();
     }
 
     std::string human_readable_pcap_file_header(pcap::Pcap_File_Header file_header) {
@@ -198,5 +140,31 @@ namespace pcap {
         rs << "OrigLen: " << record_header.OrigLen << '\n';
 
         return rs.str();
+    }
+
+    std::string human_readable_eth_header(pcap::Eth_Header &ethernet_header) {
+        std::stringstream eth_s;
+
+        //Get destination & source MAC address.
+        eth_s << "dst_mac: " << std::hex << std::setw(2) << std::setfill('0') <<
+        (uint16_t)ethernet_header.dst_mac_addr[0] << ":" <<
+        (uint16_t)ethernet_header.dst_mac_addr[1] << ":" <<
+        (uint16_t)ethernet_header.dst_mac_addr[2] << ":" <<
+        (uint16_t)ethernet_header.dst_mac_addr[3] << ":" <<
+        (uint16_t)ethernet_header.dst_mac_addr[4] << ":" <<
+        (uint16_t)ethernet_header.dst_mac_addr[5] << " ";
+
+        eth_s << "src_mac: " << std::hex << std::setw(2) << std::setfill('0') <<
+        (uint16_t)ethernet_header.dst_mac_addr[0] << ":" <<
+        (uint16_t)ethernet_header.src_mac_addr[1] << ":" <<
+        (uint16_t)ethernet_header.src_mac_addr[2] << ":" <<
+        (uint16_t)ethernet_header.src_mac_addr[3] << ":" <<
+        (uint16_t)ethernet_header.src_mac_addr[4] << ":" <<
+        (uint16_t)ethernet_header.src_mac_addr[5] << " ";
+
+        //Get EtherType.
+        eth_s << "eth_type: " << std::setw(4) << std::setfill('0') << std::showbase << ethernet_header.eth_type;
+
+        return eth_s.str();
     }
 }
