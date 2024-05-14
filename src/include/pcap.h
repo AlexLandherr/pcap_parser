@@ -10,9 +10,16 @@
 #define PCAP_H
 
 namespace pcap {
-    enum
-    {
-    MAX_FRAME_SIZE = 1536
+    static inline uint16_t bswap16(uint16_t x) {
+        return __builtin_bswap16(x);
+    }
+
+    static inline uint32_t bswap32(uint32_t x) {
+        return __builtin_bswap32(x);
+    }
+    
+    enum {
+        MAX_FRAME_SIZE = 1536
     };
 
     struct Pcap_File_Header {
@@ -51,16 +58,16 @@ namespace pcap {
         uint16_t eth_type;
     };
 
-    pcap::Pcap_File_Header get_pcap_file_header(std::FILE* f_stream);
-    pcap::Pcap_Record_Header get_pcap_record_header(std::FILE* f_stream);
-    pcap::Pcap_Record get_pcap_record(std::FILE* f_stream, pcap::Pcap_Record_Header &record_header);
-    pcap::Eth_Header get_eth_header(pcap::Pcap_Record &record);
+    pcap::Pcap_File_Header get_file_header(std::FILE* f_stream);
+    pcap::Pcap_Record_Header get_record_header(std::FILE* f_stream);
+    pcap::Pcap_Record get_record(std::FILE* f_stream, const pcap::Pcap_Record_Header &record_header);
+    pcap::Eth_Header get_eth_header(const pcap::Pcap_Record &record);
 
-    std::string uint32_t_as_hex_str(uint32_t &num);
+    std::string format_uint32_t(const uint32_t &num);
 
-    std::string human_readable_pcap_file_header(pcap::Pcap_File_Header file_header);
-    std::string human_readable_pcap_record_header(pcap::Pcap_Record_Header &record_header, int &ts_decimal_places);
-    std::string human_readable_eth_header(pcap::Eth_Header &ethernet_header);
+    std::string format_file_header(const pcap::Pcap_File_Header &file_header, const std::endian &data_endianness, const int &ts_decimal_places);
+    std::string format_record_header(const pcap::Pcap_Record_Header &record_header, const int &ts_decimal_places);
+    std::string format_eth_header(const pcap::Eth_Header &ethernet_header);
 }
 
 #endif

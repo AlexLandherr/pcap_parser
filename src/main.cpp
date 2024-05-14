@@ -37,7 +37,7 @@ int main() {
     }
 
 
-    pcap::Pcap_File_Header fh = pcap::get_pcap_file_header(f_stream);
+    pcap::Pcap_File_Header fh = pcap::get_file_header(f_stream);
 
     //Determine endianness and ts resolution (decimal places).
     switch (fh.magic_number) {
@@ -58,18 +58,18 @@ int main() {
             ts_decimal_places = 9;
             break;
         default:
-            std::cerr << "Unable to determine ts resolution and data endianness. Value: " << pcap::uint32_t_as_hex_str(fh.magic_number) << " not recognized." << '\n';
+            std::cerr << "Unable to determine ts resolution and data endianness. Value: " << pcap::format_uint32_t(fh.magic_number) << " not recognized." << '\n';
             break;
     }
 
     //Swap check.
     if (std::endian::native != data_endianness) {
         std::cout << "Data endianness different from system endianness!" << '\n';
-        fh.major_version = __builtin_bswap16(fh.major_version);
-        fh.minor_version = __builtin_bswap16(fh.minor_version);
+        fh.major_version = pcap::bswap16(fh.major_version);
+        fh.minor_version = pcap::bswap16(fh.minor_version);
 
-        fh.SnapLen = __builtin_bswap32(fh.SnapLen);
-        fh.LinkType = __builtin_bswap32(fh.LinkType);
+        fh.SnapLen = pcap::bswap32(fh.SnapLen);
+        fh.LinkType = pcap::bswap32(fh.LinkType);
     }
 
     //Check if LinkType is Ethernet.
@@ -78,50 +78,50 @@ int main() {
         std::exit(EXIT_FAILURE);
     }
 
-    std::cout << pcap::human_readable_pcap_file_header(fh);
+    std::cout << pcap::format_file_header(fh, data_endianness, ts_decimal_places);
     std::cout << "****" << '\n';
     
     int count = 0;
     while (true) {
         //Print out Packet Records in loop.
         //Populate record header.
-        pcap::Pcap_Record_Header rh = pcap::get_pcap_record_header(f_stream);
+        pcap::Pcap_Record_Header rh = pcap::get_record_header(f_stream);
 
         //Swap check.
         if (std::endian::native != data_endianness) {
-            rh.ts_seconds = __builtin_bswap32(rh.ts_seconds);
-            rh.ts_frac = __builtin_bswap32(rh.ts_frac);
-            rh.CapLen = __builtin_bswap32(rh.CapLen);
-            rh.OrigLen = __builtin_bswap32(rh.OrigLen);
+            rh.ts_seconds = pcap::bswap32(rh.ts_seconds);
+            rh.ts_frac = pcap::bswap32(rh.ts_frac);
+            rh.CapLen = pcap::bswap32(rh.CapLen);
+            rh.OrigLen = pcap::bswap32(rh.OrigLen);
         }
 
         //Use std::min() to check/set CapLen.
         rh.CapLen = std::min(rh.CapLen, static_cast<uint32_t>(pcap::MAX_FRAME_SIZE));
 
         //Populating the full record struct by getting the Packet Data field from a Packet Record.
-        pcap::Pcap_Record record = pcap::get_pcap_record(f_stream, rh);
+        pcap::Pcap_Record record = pcap::get_record(f_stream, rh);
 
         std::cout << "Record " << (count + 1) << ":" << '\n';
-        std::cout << pcap::human_readable_pcap_record_header(record.header, ts_decimal_places);
+        std::cout << pcap::format_record_header(record.header, ts_decimal_places);
 
         pcap::Eth_Header eth_header = pcap::get_eth_header(record);
         if (std::endian::native != std::endian::big) {
-            eth_header.eth_type = __builtin_bswap16(eth_header.eth_type);
+            eth_header.eth_type = pcap::bswap16(eth_header.eth_type);
         }
         //Checking EtherType.
         switch (eth_header.eth_type) {
             case 0x0800:
                 std::cout << "EtherType: IPv4." << '\n';
-                std::cout << pcap::human_readable_eth_header(eth_header) << '\n';
+                std::cout << pcap::format_eth_header(eth_header) << '\n';
                 //Eventual printout/extraction of IP packet info.
                 break;
             case 0x86DD:
                 std::cout << "EtherType: IPv6." << '\n';
-                std::cout << pcap::human_readable_eth_header(eth_header) << '\n';
+                std::cout << pcap::format_eth_header(eth_header) << '\n';
                 //Eventual printout/extraction of IP packet info.
                 break;
             default:
-                std::cout << "Default" << '\n';
+                std::cout << "Default." << '\n';
                 break;
         }
         

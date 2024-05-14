@@ -17,7 +17,7 @@
 #include <ios>
 
 namespace pcap {
-    pcap::Pcap_File_Header get_pcap_file_header(std::FILE* f_stream) {
+    pcap::Pcap_File_Header get_file_header(std::FILE* f_stream) {
         pcap::Pcap_File_Header fh_buf;
 
         const std::size_t n = std::fread(&fh_buf, sizeof(pcap::Pcap_File_Header), 1, f_stream);
@@ -30,7 +30,7 @@ namespace pcap {
         return fh_buf;
     }
 
-    pcap::Pcap_Record_Header get_pcap_record_header(std::FILE* f_stream) {
+    pcap::Pcap_Record_Header get_record_header(std::FILE* f_stream) {
         pcap::Pcap_Record_Header rh_buf;
 
         const std::size_t n = std::fread(&rh_buf, sizeof(pcap::Pcap_Record_Header), 1, f_stream);
@@ -42,7 +42,7 @@ namespace pcap {
         return rh_buf;
     }
 
-    pcap::Pcap_Record get_pcap_record(std::FILE* f_stream, pcap::Pcap_Record_Header &record_header) {
+    pcap::Pcap_Record get_record(std::FILE* f_stream, const pcap::Pcap_Record_Header &record_header) {
         pcap::Pcap_Record r_buf;
         r_buf.header = record_header;
 
@@ -55,70 +55,31 @@ namespace pcap {
         return r_buf;
     }
 
-    pcap::Eth_Header get_eth_header(pcap::Pcap_Record &record) {
-        pcap::Eth_Header eth_fh;
+    pcap::Eth_Header get_eth_header(const pcap::Pcap_Record &record) {
+        pcap::Eth_Header eh_buf;
 
         //.
-        std::memcpy(&eth_fh, &record.frame, sizeof(eth_fh));
+        std::memcpy(&eh_buf, &record.frame, sizeof(eh_buf));
 
-        return eth_fh;
+        return eh_buf;
     }
 
-    std::string uint32_t_as_hex_str(uint32_t &num) {
+    std::string format_uint32_t(const uint32_t &num) {
         std::stringstream ss;
         ss << std::hex << num;
         return ss.str();
     }
 
-    std::string human_readable_pcap_file_header(pcap::Pcap_File_Header file_header) {
+    std::string format_file_header(const pcap::Pcap_File_Header &file_header, const std::endian &data_endianness, const int &ts_decimal_places) {
         std::stringstream hs;
-        std::endian data_endianness;
-        int ts_decimal_places = 0;
-
-        //Determine endianness and ts resolution (decimal places).
-        switch (file_header.magic_number) {
-            case 0xa1b2c3d4:
-                data_endianness = std::endian::little; //change to little
-                ts_decimal_places = 6;
-                break;
-            case 0xd4c3b2a1:
-                data_endianness = std::endian::big; //change to big
-                ts_decimal_places = 6;
-                break;
-            case 0xa1b23c4d:
-                data_endianness = std::endian::little; //change to little
-                ts_decimal_places = 9;
-                break;
-            case 0x4d3cb2a1:
-                data_endianness = std::endian::big; //change to big
-                ts_decimal_places = 9;
-                break;
-            default:
-                hs << "Unable to determine ts resolution and data endianness. Value: " << pcap::uint32_t_as_hex_str(file_header.magic_number) << " not recognized." << '\n';
-                break;
-        }
-
-        hs << "magic_num: " << pcap::uint32_t_as_hex_str(file_header.magic_number) << '\n';
-
-        //Swap check.
-        if (std::endian::native != data_endianness) {
-            file_header.major_version = __builtin_bswap16(file_header.major_version);
-            file_header.minor_version = __builtin_bswap16(file_header.minor_version);
-
-            file_header.SnapLen = __builtin_bswap32(file_header.SnapLen);
-            file_header.LinkType = __builtin_bswap16(file_header.LinkType);
-        }
-
+        hs << "magic_num: " << pcap::format_uint32_t(file_header.magic_number) << '\n';
         hs << "major_version: " << file_header.major_version << '\n';
         hs << "minor_version: " << file_header.minor_version << '\n';
-
         hs << "Reserved_1: " << file_header.Reserved_1 << '\n';
         hs << "Reserved_2: " << file_header.Reserved_2 << '\n';
-
         hs << "SnapLen: " << file_header.SnapLen << '\n';
-
         hs << "LinkType: " << file_header.LinkType << '\n';
-        
+
         switch (data_endianness) {
             case std::endian::little:
                 hs << "Data endianness: little-endian" << '\n';
@@ -133,7 +94,7 @@ namespace pcap {
         return hs.str();
     }
 
-    std::string human_readable_pcap_record_header(pcap::Pcap_Record_Header &record_header, int &ts_decimal_places) {
+    std::string format_record_header(const pcap::Pcap_Record_Header &record_header, const int &ts_decimal_places) {
         std::stringstream rs;
         rs << "Unix: " << record_header.ts_seconds << "." << std::setw(ts_decimal_places) << std::setfill('0') << record_header.ts_frac << " ";
         rs << "CapLen: " << record_header.CapLen << " ";
@@ -142,7 +103,7 @@ namespace pcap {
         return rs.str();
     }
 
-    std::string human_readable_eth_header(pcap::Eth_Header &ethernet_header) {
+    std::string format_eth_header(const pcap::Eth_Header &ethernet_header) {
         std::stringstream eth_s;
 
         //Get destination & source MAC address.
