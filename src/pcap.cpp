@@ -22,11 +22,15 @@ namespace pcap {
 
         const std::size_t n = std::fread(&fh_buf, sizeof(pcap::Pcap_File_Header), 1, f_stream);
         if (n != 1) {
-            std::perror("std::fread failed!");
-            std::exit(EXIT_FAILURE); //Use 'return 1' or not?
-            //return 1;
+            if (std::ferror(f_stream)) {
+                std::cout << "I/O error when reading." << '\n';
+                std::exit(EXIT_FAILURE);
+            } else if (std::feof(f_stream)) {
+                std::cout << "EOF." << '\n';
+                std::exit(EXIT_SUCCESS);
+            }
         }
-
+        
         return fh_buf;
     }
 
@@ -35,8 +39,13 @@ namespace pcap {
 
         const std::size_t n = std::fread(&rh_buf, sizeof(pcap::Pcap_Record_Header), 1, f_stream);
         if (n != 1) {
-            std::perror("std::fread failed!");
-            std::exit(EXIT_FAILURE); //Use 'return 1' or not?
+            if (std::ferror(f_stream)) {
+                std::cout << "I/O error when reading." << '\n';
+                std::exit(EXIT_FAILURE);
+            } else if (std::feof(f_stream)) {
+                std::cout << "EOF." << '\n';
+                std::exit(EXIT_SUCCESS);
+            }
         }
 
         return rh_buf;
@@ -48,8 +57,13 @@ namespace pcap {
 
         const std::size_t n = std::fread(&r_buf.frame, record_header.CapLen, 1, f_stream);
         if (n != 1) {
-            std::perror("std::fread failed!");
-            std::exit(EXIT_FAILURE); //Use 'return 1' or not?
+            if (std::ferror(f_stream)) {
+                std::cout << "I/O error when reading." << '\n';
+                std::exit(EXIT_FAILURE);
+            } else if (std::feof(f_stream)) {
+                std::cout << "EOF." << '\n';
+                std::exit(EXIT_SUCCESS);
+            }
         }
 
         return r_buf;
