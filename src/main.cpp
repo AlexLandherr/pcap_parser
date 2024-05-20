@@ -124,7 +124,9 @@ int main() {
                 //Eventual printout/extraction of IP packet info.
                 pcap::IPv4_Header IP_header = pcap::get_IPv4_Header(eth_frame);
 
-                //if (std::endian::native != std::endian::big) {}
+                if (std::endian::native != std::endian::big) {
+                    IP_header.TotalLength = pcap::bswap16(IP_header.TotalLength);
+                }
                 std::cout << pcap::format_IPv4_header(IP_header) << '\n';
                 
                 break;

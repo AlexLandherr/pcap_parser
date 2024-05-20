@@ -69,14 +69,14 @@ namespace pcap {
         return r_buf;
     }
 
-    pcap::Eth_Header get_eth_header(const pcap::Record &record) {
+    /* pcap::Eth_Header get_eth_header(const pcap::Record &record) {
         pcap::Eth_Header eh_buf;
 
         //.
         std::memcpy(&eh_buf, &record.frame, sizeof(eh_buf));
 
         return eh_buf;
-    }
+    } */
 
     pcap::Eth_Frame get_eth_frame(const pcap::Record &record) {
         pcap::Eth_Frame eth_f_buf;
@@ -164,11 +164,11 @@ namespace pcap {
     std::string format_IPv4_header(const pcap::IPv4_Header &IP_header) {
         std::stringstream IP_s;
 
-        /* IP_s << "Version: " << (uint16_t)IP_header.Version;
-        IP_s << "IHL: " << (uint16_t)IP_header.IHL;
-        IP_s << "Total Length: " << IP_header.TotalLength;
-        IP_s << "TTL: " << (uint16_t)IP_header.TTL;
-        IP_s << "Protocol: " << std::hex << std::setw(2) << std::setfill('0') << IP_header.Protocol << '\n'; */
+        //IP_s << "Version: " << (uint16_t)IP_header.Version;
+        //IP_s << "IHL: " << (uint16_t)IP_header.IHL;
+        IP_s << "Total Length: " << IP_header.TotalLength << ' ';
+        //IP_s << "TTL: " << (uint16_t)IP_header.TTL;
+        //IP_s << "Protocol: " << std::hex << std::setw(2) << std::setfill('0') << IP_header.Protocol << '\n';
 
         //Getting source & destination IPv4 address. int x = (number >> (8*n)) & 0xff;
         //src_IPv4.
