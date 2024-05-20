@@ -78,6 +78,24 @@ namespace pcap {
         return eh_buf;
     }
 
+    pcap::Eth_Frame get_eth_frame(const pcap::Record &record) {
+        pcap::Eth_Frame eth_f_buf;
+
+        //.
+        std::memcpy(&eth_f_buf, &record.frame, sizeof(eth_f_buf));
+
+        return eth_f_buf;
+    }
+
+    pcap::IPv4_Header get_IPv4_Header(const pcap::Eth_Frame &eth_frame) {
+        pcap::IPv4_Header IP_buf;
+
+        //.
+        std::memcpy(&IP_buf, &eth_frame.data, sizeof(IP_buf));
+
+        return IP_buf;
+    }
+
     std::string format_uint32_t(const uint32_t &num) {
         std::stringstream ss;
         ss << std::hex << num;
@@ -141,5 +159,33 @@ namespace pcap {
         eth_s << "eth_type: " << std::setw(4) << std::setfill('0') << std::showbase << ethernet_header.eth_type;
 
         return eth_s.str();
+    }
+
+    std::string format_IPv4_header(const pcap::IPv4_Header &IP_header) {
+        std::stringstream IP_s;
+
+        /* IP_s << "Version: " << (uint16_t)IP_header.Version;
+        IP_s << "IHL: " << (uint16_t)IP_header.IHL;
+        IP_s << "Total Length: " << IP_header.TotalLength;
+        IP_s << "TTL: " << (uint16_t)IP_header.TTL;
+        IP_s << "Protocol: " << std::hex << std::setw(2) << std::setfill('0') << IP_header.Protocol << '\n'; */
+
+        //Getting source & destination IPv4 address. int x = (number >> (8*n)) & 0xff;
+        //src_IPv4.
+        uint8_t src_a = (IP_header.SourceAddress >> (8 * 0)) & 0xff;
+        uint8_t src_b = (IP_header.SourceAddress >> (8 * 1)) & 0xff;
+        uint8_t src_c = (IP_header.SourceAddress >> (8 * 2)) & 0xff;
+        uint8_t src_d = (IP_header.SourceAddress >> (8 * 3)) & 0xff;
+
+        //dst_IPv4.
+        uint8_t dst_a = (IP_header.DestinationAddress >> (8 * 0)) & 0xff;
+        uint8_t dst_b = (IP_header.DestinationAddress >> (8 * 1)) & 0xff;
+        uint8_t dst_c = (IP_header.DestinationAddress >> (8 * 2)) & 0xff;
+        uint8_t dst_d = (IP_header.DestinationAddress >> (8 * 3)) & 0xff;
+
+        IP_s << "src_IPv4: " << (uint16_t)src_a << "." << (uint16_t)src_b << "." << (uint16_t)src_c << "." << (uint16_t)src_d << ' ';
+        IP_s << "dst_IPv4: " << (uint16_t)dst_a << "." << (uint16_t)dst_b << "." << (uint16_t)dst_c << "." << (uint16_t)dst_d;
+
+        return IP_s.str();
     }
 }

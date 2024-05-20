@@ -36,30 +36,34 @@ int main() {
         return 1;
     }
 
-
     pcap::File_Header fh = pcap::get_file_header(f_stream);
 
     //Determine endianness and ts resolution (decimal places).
     switch (fh.magic_number) {
-        case 0xa1b2c3d4:
+        case 0xa1b2c3d4: {
             data_endianness = std::endian::little; //change to little
             ts_decimal_places = 6;
             break;
-        case 0xd4c3b2a1:
+        }
+        case 0xd4c3b2a1: {
             data_endianness = std::endian::big; //change to big
             ts_decimal_places = 6;
             break;
-        case 0xa1b23c4d:
+        }
+        case 0xa1b23c4d: {
             data_endianness = std::endian::little; //change to little
             ts_decimal_places = 9;
             break;
-        case 0x4d3cb2a1:
+        }
+        case 0x4d3cb2a1: {
             data_endianness = std::endian::big; //change to big
             ts_decimal_places = 9;
             break;
-        default:
+        }
+        default: {
             std::cerr << "Unable to determine ts resolution and data endianness. Value: " << pcap::format_uint32_t(fh.magic_number) << " not recognized." << '\n';
             break;
+        }
     }
 
     //Swap check.
@@ -79,6 +83,8 @@ int main() {
     }
 
     std::cout << pcap::format_file_header(fh, data_endianness, ts_decimal_places);
+    std::cout << "****" << '\n';
+    std::cout << "Size of 'IPv4_Header' struct without 'Options' field in bytes: " << sizeof(pcap::IPv4_Header) << '\n';
     std::cout << "****" << '\n';
     
     int count = 0;
@@ -104,25 +110,35 @@ int main() {
         std::cout << "Record " << (count + 1) << ":" << '\n';
         std::cout << pcap::format_record_header(record.header, ts_decimal_places);
 
-        pcap::Eth_Header eth_header = pcap::get_eth_header(record);
+        pcap::Eth_Frame eth_frame = pcap::get_eth_frame(record);
         if (std::endian::native != std::endian::big) {
-            eth_header.eth_type = pcap::bswap16(eth_header.eth_type);
+            eth_frame.header.eth_type = pcap::bswap16(eth_frame.header.eth_type);
         }
+
         //Checking EtherType.
-        switch (eth_header.eth_type) {
-            case 0x0800:
+        switch (eth_frame.header.eth_type) {
+            case 0x0800: {
                 std::cout << "EtherType: IPv4." << '\n';
-                std::cout << pcap::format_eth_header(eth_header) << '\n';
+                std::cout << pcap::format_eth_header(eth_frame.header) << '\n';
+                
                 //Eventual printout/extraction of IP packet info.
+                pcap::IPv4_Header IP_header = pcap::get_IPv4_Header(eth_frame);
+
+                //if (std::endian::native != std::endian::big) {}
+                std::cout << pcap::format_IPv4_header(IP_header) << '\n';
+                
                 break;
-            case 0x86DD:
+            }
+            case 0x86DD: {
                 std::cout << "EtherType: IPv6." << '\n';
-                std::cout << pcap::format_eth_header(eth_header) << '\n';
+                std::cout << pcap::format_eth_header(eth_frame.header) << '\n';
                 //Eventual printout/extraction of IP packet info.
                 break;
-            default:
+            }
+            default: {
                 std::cout << "Default." << '\n';
                 break;
+            }
         }
         
         std::cout << '\n';

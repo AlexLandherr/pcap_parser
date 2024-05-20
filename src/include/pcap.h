@@ -58,16 +58,41 @@ namespace pcap {
         uint16_t eth_type;
     };
 
+    struct Eth_Frame {
+        pcap::Eth_Header header;
+        std::array<uint8_t, 1500> data; //IP, ARP etc.
+    };
+
+    struct IPv4_Header {
+        uint8_t Version : 4;
+        uint8_t IHL : 4;
+        uint8_t DSCP : 6;
+        uint8_t ECN : 2;
+        uint16_t TotalLength;
+        uint16_t Identification;
+        uint8_t Flags : 3;
+        uint16_t FragmentOffset : 13;
+        uint8_t TTL;
+        uint8_t Protocol;
+        uint16_t HeaderChecksum;
+        uint32_t SourceAddress;
+        uint32_t DestinationAddress;
+        //uint32_t Options : 320;
+    };
+
     pcap::File_Header get_file_header(std::FILE* f_stream);
     pcap::Record_Header get_record_header(std::FILE* f_stream);
     pcap::Record get_record(std::FILE* f_stream, const pcap::Record_Header &record_header);
     pcap::Eth_Header get_eth_header(const pcap::Record &record);
+    pcap::Eth_Frame get_eth_frame(const pcap::Record &record);
+    pcap::IPv4_Header get_IPv4_Header(const pcap::Eth_Frame &eth_frame);
 
     std::string format_uint32_t(const uint32_t &num);
 
     std::string format_file_header(const pcap::File_Header &file_header, const std::endian &data_endianness, const int &ts_decimal_places);
     std::string format_record_header(const pcap::Record_Header &record_header, const int &ts_decimal_places);
     std::string format_eth_header(const pcap::Eth_Header &ethernet_header);
+    std::string format_IPv4_header(const pcap::IPv4_Header &IP_header);
 }
 
 #endif
