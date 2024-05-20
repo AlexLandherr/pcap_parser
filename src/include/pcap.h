@@ -22,7 +22,7 @@ namespace pcap {
         MAX_FRAME_SIZE = 1536
     };
 
-    struct Pcap_File_Header {
+    struct File_Header {
         uint32_t magic_number;
         uint16_t major_version;
         uint16_t minor_version;
@@ -32,7 +32,7 @@ namespace pcap {
         uint32_t LinkType;
     };
 
-    struct Pcap_Record_Header {
+    struct Record_Header {
         uint32_t ts_seconds;
 
         //Fractional part of timestamp (after decimal sign/point).
@@ -46,8 +46,8 @@ namespace pcap {
         uint32_t OrigLen;
     };
 
-    struct Pcap_Record {
-        pcap::Pcap_Record_Header header;
+    struct Record {
+        pcap::Record_Header header;
         std::array<uint8_t, MAX_FRAME_SIZE> frame; //aka Packet Data field.
         //uint8_t frame[MAX_FRAME_SIZE];
     };
@@ -58,15 +58,15 @@ namespace pcap {
         uint16_t eth_type;
     };
 
-    pcap::Pcap_File_Header get_file_header(std::FILE* f_stream);
-    pcap::Pcap_Record_Header get_record_header(std::FILE* f_stream);
-    pcap::Pcap_Record get_record(std::FILE* f_stream, const pcap::Pcap_Record_Header &record_header);
-    pcap::Eth_Header get_eth_header(const pcap::Pcap_Record &record);
+    pcap::File_Header get_file_header(std::FILE* f_stream);
+    pcap::Record_Header get_record_header(std::FILE* f_stream);
+    pcap::Record get_record(std::FILE* f_stream, const pcap::Record_Header &record_header);
+    pcap::Eth_Header get_eth_header(const pcap::Record &record);
 
     std::string format_uint32_t(const uint32_t &num);
 
-    std::string format_file_header(const pcap::Pcap_File_Header &file_header, const std::endian &data_endianness, const int &ts_decimal_places);
-    std::string format_record_header(const pcap::Pcap_Record_Header &record_header, const int &ts_decimal_places);
+    std::string format_file_header(const pcap::File_Header &file_header, const std::endian &data_endianness, const int &ts_decimal_places);
+    std::string format_record_header(const pcap::Record_Header &record_header, const int &ts_decimal_places);
     std::string format_eth_header(const pcap::Eth_Header &ethernet_header);
 }
 

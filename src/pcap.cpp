@@ -17,10 +17,10 @@
 #include <ios>
 
 namespace pcap {
-    pcap::Pcap_File_Header get_file_header(std::FILE* f_stream) {
-        pcap::Pcap_File_Header fh_buf;
+    pcap::File_Header get_file_header(std::FILE* f_stream) {
+        pcap::File_Header fh_buf;
 
-        const std::size_t n = std::fread(&fh_buf, sizeof(pcap::Pcap_File_Header), 1, f_stream);
+        const std::size_t n = std::fread(&fh_buf, sizeof(pcap::File_Header), 1, f_stream);
         if (n != 1) {
             if (std::ferror(f_stream)) {
                 std::cout << "I/O error when reading." << '\n';
@@ -34,10 +34,10 @@ namespace pcap {
         return fh_buf;
     }
 
-    pcap::Pcap_Record_Header get_record_header(std::FILE* f_stream) {
-        pcap::Pcap_Record_Header rh_buf;
+    pcap::Record_Header get_record_header(std::FILE* f_stream) {
+        pcap::Record_Header rh_buf;
 
-        const std::size_t n = std::fread(&rh_buf, sizeof(pcap::Pcap_Record_Header), 1, f_stream);
+        const std::size_t n = std::fread(&rh_buf, sizeof(pcap::Record_Header), 1, f_stream);
         if (n != 1) {
             if (std::ferror(f_stream)) {
                 std::cout << "I/O error when reading." << '\n';
@@ -51,8 +51,8 @@ namespace pcap {
         return rh_buf;
     }
 
-    pcap::Pcap_Record get_record(std::FILE* f_stream, const pcap::Pcap_Record_Header &record_header) {
-        pcap::Pcap_Record r_buf;
+    pcap::Record get_record(std::FILE* f_stream, const pcap::Record_Header &record_header) {
+        pcap::Record r_buf;
         r_buf.header = record_header;
 
         const std::size_t n = std::fread(&r_buf.frame, record_header.CapLen, 1, f_stream);
@@ -69,7 +69,7 @@ namespace pcap {
         return r_buf;
     }
 
-    pcap::Eth_Header get_eth_header(const pcap::Pcap_Record &record) {
+    pcap::Eth_Header get_eth_header(const pcap::Record &record) {
         pcap::Eth_Header eh_buf;
 
         //.
@@ -84,7 +84,7 @@ namespace pcap {
         return ss.str();
     }
 
-    std::string format_file_header(const pcap::Pcap_File_Header &file_header, const std::endian &data_endianness, const int &ts_decimal_places) {
+    std::string format_file_header(const pcap::File_Header &file_header, const std::endian &data_endianness, const int &ts_decimal_places) {
         std::stringstream hs;
         hs << "magic_num: " << pcap::format_uint32_t(file_header.magic_number) << '\n';
         hs << "major_version: " << file_header.major_version << '\n';
@@ -108,7 +108,7 @@ namespace pcap {
         return hs.str();
     }
 
-    std::string format_record_header(const pcap::Pcap_Record_Header &record_header, const int &ts_decimal_places) {
+    std::string format_record_header(const pcap::Record_Header &record_header, const int &ts_decimal_places) {
         std::stringstream rs;
         rs << "Unix: " << record_header.ts_seconds << "." << std::setw(ts_decimal_places) << std::setfill('0') << record_header.ts_frac << " ";
         rs << "CapLen: " << record_header.CapLen << " ";

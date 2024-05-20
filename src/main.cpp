@@ -37,7 +37,7 @@ int main() {
     }
 
 
-    pcap::Pcap_File_Header fh = pcap::get_file_header(f_stream);
+    pcap::File_Header fh = pcap::get_file_header(f_stream);
 
     //Determine endianness and ts resolution (decimal places).
     switch (fh.magic_number) {
@@ -85,7 +85,7 @@ int main() {
     while (true) {
         //Print out Packet Records in loop.
         //Populate record header.
-        pcap::Pcap_Record_Header rh = pcap::get_record_header(f_stream);
+        pcap::Record_Header rh = pcap::get_record_header(f_stream);
 
         //Swap check.
         if (std::endian::native != data_endianness) {
@@ -99,7 +99,7 @@ int main() {
         rh.CapLen = std::min(rh.CapLen, static_cast<uint32_t>(pcap::MAX_FRAME_SIZE));
 
         //Populating the full record struct by getting the Packet Data field from a Packet Record.
-        pcap::Pcap_Record record = pcap::get_record(f_stream, rh);
+        pcap::Record record = pcap::get_record(f_stream, rh);
 
         std::cout << "Record " << (count + 1) << ":" << '\n';
         std::cout << pcap::format_record_header(record.header, ts_decimal_places);
