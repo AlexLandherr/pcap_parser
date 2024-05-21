@@ -64,7 +64,7 @@ namespace pcap {
     };
 
     struct IPv4_Header {
-        uint8_t Version : 4;
+        /* uint8_t Version : 4;
         uint8_t IHL : 4;
         uint8_t DSCP : 6;
         uint8_t ECN : 2;
@@ -77,7 +77,29 @@ namespace pcap {
         uint16_t HeaderChecksum;
         uint32_t SourceAddress;
         uint32_t DestinationAddress;
-        //uint32_t Options : 320;
+        uint32_t Options : 320; */
+        uint8_t version_IHL;
+        uint8_t DSCP_ECN;
+        uint16_t total_len;
+        uint16_t ID;
+        uint16_t flag_frag_offset;
+        uint8_t TTL;
+        uint8_t protocol;
+        uint16_t header_chksum;
+        uint32_t src_addr;
+        uint32_t dst_addr;
+    };
+
+    struct TCP_Header {
+        uint16_t src_port;
+        uint16_t dst_port;
+        uint32_t sequence_num;
+        uint32_t ACK_num; //If ACK set in flags.
+        uint8_t data_offset_reserved; //Data Offset & Reserved bits.
+        uint8_t flags;
+        uint16_t window_size;
+        uint16_t chk_sum;
+        uint16_t urg_pointer; //If URG set flags.
     };
 
     pcap::File_Header get_file_header(std::FILE* f_stream);

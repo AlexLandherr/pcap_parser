@@ -13,6 +13,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <cstdio>
+#include <array>
 
 int main() {
     //variables for timestamp resolution and data endianness.
@@ -84,7 +85,7 @@ int main() {
 
     std::cout << pcap::format_file_header(fh, data_endianness, ts_decimal_places);
     std::cout << "****" << '\n';
-    std::cout << "Size of 'IPv4_Header' struct without 'Options' field in bytes: " << sizeof(pcap::IPv4_Header) << '\n';
+    std::cout << "Size of 'IPv4_Header' struct in bytes: " << sizeof(pcap::IPv4_Header) << '\n';
     std::cout << "****" << '\n';
     
     int count = 0;
@@ -123,9 +124,26 @@ int main() {
                 
                 //Eventual printout/extraction of IP packet info.
                 pcap::IPv4_Header IP_header = pcap::get_IPv4_Header(eth_frame);
+                std::array<uint8_t, 40> IPv4_opts_arr;
+
+                //Extracting version and IHL values with bit masking.
+                uint8_t IP_version = (IP_header.version_IHL >> 4) & ((1 << 4) - 1);
+                uint8_t IHL = IP_header.version_IHL & ((1 << 4) - 1);
+
+                //Calculate IP payload size in bytes.
 
                 if (std::endian::native != std::endian::big) {
-                    IP_header.TotalLength = pcap::bswap16(IP_header.TotalLength);
+                    //swap version_IHL?
+                    //swap DSCP_ECN?
+                    IP_header.total_len = pcap::bswap16(IP_header.total_len);
+                    IP_header.ID = pcap::bswap16(IP_header.ID);
+                    IP_header.flag_frag_offset = pcap::bswap16(IP_header.flag_frag_offset);
+                    //swap TTL?
+                    //swap protocol?
+                    IP_header.header_chksum = pcap::bswap16(IP_header.header_chksum);
+                    //Avoid swapping IP addresses?
+                    //IP_header.src_addr = pcap::bswap32(IP_header.src_addr);
+                    //IP_header.dst_addr = pcap::bswap32(IP_header.dst_addr);
                 }
                 std::cout << pcap::format_IPv4_header(IP_header) << '\n';
                 

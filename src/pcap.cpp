@@ -166,22 +166,25 @@ namespace pcap {
 
         //IP_s << "Version: " << (uint16_t)IP_header.Version;
         //IP_s << "IHL: " << (uint16_t)IP_header.IHL;
-        IP_s << "Total Length: " << IP_header.TotalLength << ' ';
-        //IP_s << "TTL: " << (uint16_t)IP_header.TTL;
-        //IP_s << "Protocol: " << std::hex << std::setw(2) << std::setfill('0') << IP_header.Protocol << '\n';
+        IP_s << "IP version: " << (uint16_t)((IP_header.version_IHL >> 4) & ((1 << 4) - 1)) << ' ';
+        IP_s << "IHL: " << (uint16_t)(IP_header.version_IHL & ((1 << 4) - 1)) << ' ';
+        IP_s << "Total Length: " << IP_header.total_len << ' ';
+        IP_s << "TTL: " << (uint16_t)IP_header.TTL << ' ';
+        //IP_s << "Protocol: " << std::hex << std::setw(2) << std::setfill('0') << IP_header.protocol << ' ';
+        IP_s << "Protocol: " << (uint16_t)IP_header.protocol << ' ';
 
         //Getting source & destination IPv4 address. int x = (number >> (8*n)) & 0xff;
         //src_IPv4.
-        uint8_t src_a = (IP_header.SourceAddress >> (8 * 0)) & 0xff;
-        uint8_t src_b = (IP_header.SourceAddress >> (8 * 1)) & 0xff;
-        uint8_t src_c = (IP_header.SourceAddress >> (8 * 2)) & 0xff;
-        uint8_t src_d = (IP_header.SourceAddress >> (8 * 3)) & 0xff;
+        uint8_t src_a = (IP_header.src_addr >> (8 * 0)) & 0xff;
+        uint8_t src_b = (IP_header.src_addr >> (8 * 1)) & 0xff;
+        uint8_t src_c = (IP_header.src_addr >> (8 * 2)) & 0xff;
+        uint8_t src_d = (IP_header.src_addr >> (8 * 3)) & 0xff;
 
         //dst_IPv4.
-        uint8_t dst_a = (IP_header.DestinationAddress >> (8 * 0)) & 0xff;
-        uint8_t dst_b = (IP_header.DestinationAddress >> (8 * 1)) & 0xff;
-        uint8_t dst_c = (IP_header.DestinationAddress >> (8 * 2)) & 0xff;
-        uint8_t dst_d = (IP_header.DestinationAddress >> (8 * 3)) & 0xff;
+        uint8_t dst_a = (IP_header.dst_addr >> (8 * 0)) & 0xff;
+        uint8_t dst_b = (IP_header.dst_addr >> (8 * 1)) & 0xff;
+        uint8_t dst_c = (IP_header.dst_addr >> (8 * 2)) & 0xff;
+        uint8_t dst_d = (IP_header.dst_addr >> (8 * 3)) & 0xff;
 
         IP_s << "src_IPv4: " << (uint16_t)src_a << "." << (uint16_t)src_b << "." << (uint16_t)src_c << "." << (uint16_t)src_d << ' ';
         IP_s << "dst_IPv4: " << (uint16_t)dst_a << "." << (uint16_t)dst_b << "." << (uint16_t)dst_c << "." << (uint16_t)dst_d;
