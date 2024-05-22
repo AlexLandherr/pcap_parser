@@ -110,18 +110,13 @@ int main() {
         pcap::Record record = pcap::get_record(f_stream, rh);
         pcap::Eth_Header* eth = (pcap::Eth_Header*) &record.frame[curr];
         curr += sizeof(pcap::Eth_Header);
-        
+
         if (std::endian::native != std::endian::big) {
             eth->eth_type = pcap::bswap16(eth->eth_type);
         }
 
         std::cout << "Record " << count << ":" << '\n';
         std::cout << pcap::format_record_header(record.header, ts_decimal_places);
-
-        //pcap::Eth_Frame eth_frame = pcap::get_eth_frame(record);
-        /* if (std::endian::native != std::endian::big) {
-            eth->eth_type = pcap::bswap16(eth->eth_type);
-        } */
 
         //Checking EtherType.
         switch (eth->eth_type) {
