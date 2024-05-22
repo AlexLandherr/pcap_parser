@@ -88,8 +88,9 @@ int main() {
     std::cout << "Size of 'IPv4_Header' struct in bytes: " << sizeof(pcap::IPv4_Header) << '\n';
     std::cout << "****" << '\n';
     
-    int count = 0;
+    int count = 1;
     while (true) {
+        int curr = 0;
         //Print out Packet Records in loop.
         //Populate record header.
         pcap::Record_Header rh = pcap::get_record_header(f_stream);
@@ -107,51 +108,84 @@ int main() {
 
         //Populating the full record struct by getting the Packet Data field from a Packet Record.
         pcap::Record record = pcap::get_record(f_stream, rh);
-
-        std::cout << "Record " << (count + 1) << ":" << '\n';
-        std::cout << pcap::format_record_header(record.header, ts_decimal_places);
-
-        pcap::Eth_Frame eth_frame = pcap::get_eth_frame(record);
+        pcap::Eth_Header* eth = (pcap::Eth_Header*) &record.frame[curr];
+        curr += sizeof(pcap::Eth_Header);
+        
         if (std::endian::native != std::endian::big) {
-            eth_frame.header.eth_type = pcap::bswap16(eth_frame.header.eth_type);
+            eth->eth_type = pcap::bswap16(eth->eth_type);
         }
 
+        std::cout << "Record " << count << ":" << '\n';
+        std::cout << pcap::format_record_header(record.header, ts_decimal_places);
+
+        //pcap::Eth_Frame eth_frame = pcap::get_eth_frame(record);
+        /* if (std::endian::native != std::endian::big) {
+            eth->eth_type = pcap::bswap16(eth->eth_type);
+        } */
+
         //Checking EtherType.
-        switch (eth_frame.header.eth_type) {
+        switch (eth->eth_type) {
             case 0x0800: {
                 std::cout << "EtherType: IPv4." << '\n';
-                std::cout << pcap::format_eth_header(eth_frame.header) << '\n';
+                std::cout << pcap::format_eth_header(*eth) << '\n';
                 
                 //Eventual printout/extraction of IP packet info.
-                pcap::IPv4_Header IP_header = pcap::get_IPv4_Header(eth_frame);
-                std::array<uint8_t, 40> IPv4_opts_arr;
+                pcap::IPv4_Header& ip = *(pcap::IPv4_Header*) &record.frame[curr];
+                if (std::endian::native != std::endian::big) {
+                    ip.total_len = pcap::bswap16(ip.total_len);
+                    ip.ID = pcap::bswap16(ip.ID);
+                    ip.flag_frag_offset = pcap::bswap16(ip.flag_frag_offset);
+                    ip.header_chksum = pcap::bswap16(ip.header_chksum);
+                }
+                std::cout << pcap::format_IPv4_header(ip) << '\n';
+
+                //std::array<uint8_t, 40> IPv4_opts_arr;
 
                 //Extracting version and IHL values with bit masking.
-                uint8_t IP_version = (IP_header.version_IHL >> 4) & ((1 << 4) - 1);
-                uint8_t IHL = IP_header.version_IHL & ((1 << 4) - 1);
+                uint16_t IHL = ip.version_IHL & ((1 << 4) - 1);
+
+                curr += IHL * 4;
+
+                //Checking protocol (TCP or UDP).
+                switch (ip.protocol) {
+                    case 0x06: {
+                        //Eventual printout/extraction of TCP info.
+                        pcap::TCP_Header& tcp = *(pcap::TCP_Header*) &record.frame[curr];
+                        if (std::endian::native != std::endian::big) {
+                            tcp.src_port = pcap::bswap16(tcp.src_port);
+                            tcp.dst_port = pcap::bswap16(tcp.dst_port);
+                            tcp.sequence_num = pcap::bswap32(tcp.sequence_num);
+                            tcp.ACK_num = pcap::bswap32(tcp.ACK_num);
+                            //Swap data_offset_reserved?
+                            //Swap flags?
+                            tcp.window_size = pcap::bswap16(tcp.window_size);
+                            tcp.chk_sum = pcap::bswap16(tcp.chk_sum);
+                            tcp.urg_pointer = pcap::bswap16(tcp.urg_pointer);
+                        }
+
+                        //Increment curr?
+                        
+                        std::cout << pcap::format_TCP_header(tcp) << '\n';
+                        
+                        break;
+                    }
+                    case 0x11: {
+                        //Eventual printout/extraction of UDP info.
+                        break;
+                    }
+                    default: {
+                        std::cout << "Default." << '\n';
+                        break;
+                    }
+                }
 
                 //Calculate IP payload size in bytes.
-
-                if (std::endian::native != std::endian::big) {
-                    //swap version_IHL?
-                    //swap DSCP_ECN?
-                    IP_header.total_len = pcap::bswap16(IP_header.total_len);
-                    IP_header.ID = pcap::bswap16(IP_header.ID);
-                    IP_header.flag_frag_offset = pcap::bswap16(IP_header.flag_frag_offset);
-                    //swap TTL?
-                    //swap protocol?
-                    IP_header.header_chksum = pcap::bswap16(IP_header.header_chksum);
-                    //Avoid swapping IP addresses?
-                    //IP_header.src_addr = pcap::bswap32(IP_header.src_addr);
-                    //IP_header.dst_addr = pcap::bswap32(IP_header.dst_addr);
-                }
-                std::cout << pcap::format_IPv4_header(IP_header) << '\n';
                 
                 break;
             }
             case 0x86DD: {
                 std::cout << "EtherType: IPv6." << '\n';
-                std::cout << pcap::format_eth_header(eth_frame.header) << '\n';
+                std::cout << pcap::format_eth_header(*eth) << '\n';
                 //Eventual printout/extraction of IP packet info.
                 break;
             }

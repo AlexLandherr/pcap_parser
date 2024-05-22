@@ -78,7 +78,7 @@ namespace pcap {
         return eh_buf;
     } */
 
-    pcap::Eth_Frame get_eth_frame(const pcap::Record &record) {
+    /* pcap::Eth_Frame get_eth_frame(const pcap::Record &record) {
         pcap::Eth_Frame eth_f_buf;
 
         //.
@@ -94,7 +94,7 @@ namespace pcap {
         std::memcpy(&IP_buf, &eth_frame.data, sizeof(IP_buf));
 
         return IP_buf;
-    }
+    } */
 
     std::string format_uint32_t(const uint32_t &num) {
         std::stringstream ss;
@@ -148,7 +148,7 @@ namespace pcap {
         (uint16_t)ethernet_header.dst_mac_addr[5] << " ";
 
         eth_s << "src_mac: " << std::hex << std::setw(2) << std::setfill('0') <<
-        (uint16_t)ethernet_header.dst_mac_addr[0] << ":" <<
+        (uint16_t)ethernet_header.src_mac_addr[0] << ":" <<
         (uint16_t)ethernet_header.src_mac_addr[1] << ":" <<
         (uint16_t)ethernet_header.src_mac_addr[2] << ":" <<
         (uint16_t)ethernet_header.src_mac_addr[3] << ":" <<
@@ -164,31 +164,39 @@ namespace pcap {
     std::string format_IPv4_header(const pcap::IPv4_Header &IP_header) {
         std::stringstream IP_s;
 
-        //IP_s << "Version: " << (uint16_t)IP_header.Version;
-        //IP_s << "IHL: " << (uint16_t)IP_header.IHL;
         IP_s << "IP version: " << (uint16_t)((IP_header.version_IHL >> 4) & ((1 << 4) - 1)) << ' ';
         IP_s << "IHL: " << (uint16_t)(IP_header.version_IHL & ((1 << 4) - 1)) << ' ';
         IP_s << "Total Length: " << IP_header.total_len << ' ';
         IP_s << "TTL: " << (uint16_t)IP_header.TTL << ' ';
-        //IP_s << "Protocol: " << std::hex << std::setw(2) << std::setfill('0') << IP_header.protocol << ' ';
         IP_s << "Protocol: " << (uint16_t)IP_header.protocol << ' ';
 
-        //Getting source & destination IPv4 address. int x = (number >> (8*n)) & 0xff;
+        //Getting source & destination IPv4 address.
         //src_IPv4.
-        uint8_t src_a = (IP_header.src_addr >> (8 * 0)) & 0xff;
-        uint8_t src_b = (IP_header.src_addr >> (8 * 1)) & 0xff;
-        uint8_t src_c = (IP_header.src_addr >> (8 * 2)) & 0xff;
-        uint8_t src_d = (IP_header.src_addr >> (8 * 3)) & 0xff;
+        uint16_t src_a = (IP_header.src_addr >> (8 * 0)) & 0xff;
+        uint16_t src_b = (IP_header.src_addr >> (8 * 1)) & 0xff;
+        uint16_t src_c = (IP_header.src_addr >> (8 * 2)) & 0xff;
+        uint16_t src_d = (IP_header.src_addr >> (8 * 3)) & 0xff;
 
         //dst_IPv4.
-        uint8_t dst_a = (IP_header.dst_addr >> (8 * 0)) & 0xff;
-        uint8_t dst_b = (IP_header.dst_addr >> (8 * 1)) & 0xff;
-        uint8_t dst_c = (IP_header.dst_addr >> (8 * 2)) & 0xff;
-        uint8_t dst_d = (IP_header.dst_addr >> (8 * 3)) & 0xff;
+        uint16_t dst_a = (IP_header.dst_addr >> (8 * 0)) & 0xff;
+        uint16_t dst_b = (IP_header.dst_addr >> (8 * 1)) & 0xff;
+        uint16_t dst_c = (IP_header.dst_addr >> (8 * 2)) & 0xff;
+        uint16_t dst_d = (IP_header.dst_addr >> (8 * 3)) & 0xff;
 
-        IP_s << "src_IPv4: " << (uint16_t)src_a << "." << (uint16_t)src_b << "." << (uint16_t)src_c << "." << (uint16_t)src_d << ' ';
-        IP_s << "dst_IPv4: " << (uint16_t)dst_a << "." << (uint16_t)dst_b << "." << (uint16_t)dst_c << "." << (uint16_t)dst_d;
+        IP_s << "src_IPv4: " << src_a << "." << src_b << "." << src_c << "." << src_d << ' ';
+        IP_s << "dst_IPv4: " << dst_a << "." << dst_b << "." << dst_c << "." << dst_d;
 
         return IP_s.str();
+    }
+
+    std::string format_TCP_header(const pcap::TCP_Header &TCP_header) {
+        std::stringstream TCP_s;
+
+        TCP_s << "TCP_src_port: " << TCP_header.src_port << ' ';
+        TCP_s << "TCP_dst_port: " << TCP_header.dst_port << ' ';
+        TCP_s << "Data offset: " << (uint16_t)((TCP_header.data_offset_reserved >> 4) & ((1 << 4) - 1)) << ' ';
+        TCP_s << "Window size: " << TCP_header.window_size;
+
+        return TCP_s.str();
     }
 }
