@@ -189,14 +189,49 @@ namespace pcap {
         return IP_s.str();
     }
 
-    std::string format_TCP_header(const pcap::TCP_Header &TCP_header) {
-        std::stringstream TCP_s;
+    std::string format_TCP_UDP_header(const pcap::IPv4_Header &IP_header, const pcap::Record &record, int &curr) {
+        std::stringstream tcp_udp_s;
 
-        TCP_s << "TCP_src_port: " << TCP_header.src_port << ' ';
-        TCP_s << "TCP_dst_port: " << TCP_header.dst_port << ' ';
-        TCP_s << "Data offset: " << (uint16_t)((TCP_header.data_offset_reserved >> 4) & ((1 << 4) - 1)) << ' ';
-        TCP_s << "Window size: " << TCP_header.window_size;
+        switch (IP_header.protocol) {
+            case 0x06: {
+                //Eventual printout/extraction of TCP info.
+                pcap::TCP_Header& tcp = *(pcap::TCP_Header*) &record.frame[curr];
+                if (std::endian::native != std::endian::big) {
+                    tcp.src_port = pcap::bswap16(tcp.src_port);
+                    tcp.dst_port = pcap::bswap16(tcp.dst_port);
+                    tcp.sequence_num = pcap::bswap32(tcp.sequence_num);
+                    tcp.ACK_num = pcap::bswap32(tcp.ACK_num);
+                    //Swap data_offset_reserved?
+                    //Swap flags?
+                    tcp.window_size = pcap::bswap16(tcp.window_size);
+                    tcp.chk_sum = pcap::bswap16(tcp.chk_sum);
+                    tcp.urg_pointer = pcap::bswap16(tcp.urg_pointer);
+                }
 
-        return TCP_s.str();
+                //If data offset > 5 put options field in an array below.
+                uint8_t data_offset = ((tcp.data_offset_reserved >> 4) & ((1 << 4) - 1));
+
+                //Increment curr?
+                        
+                //std::cout << pcap::format_TCP_header(tcp) << '\n';
+                tcp_udp_s << "TCP_src_port: " << tcp.src_port << ' ';
+                tcp_udp_s << "TCP_dst_port: " << tcp.dst_port << ' ';
+                tcp_udp_s << "Data offset: " << (uint16_t)((tcp.data_offset_reserved >> 4) & ((1 << 4) - 1)) << ' ';
+                tcp_udp_s << "Window size: " << tcp.window_size;
+                        
+                break;
+            }
+            case 0x11: {
+                //Eventual printout/extraction of UDP info.
+                tcp_udp_s << "UDP placeholder.";
+                break;
+            }
+            default: {
+                std::cout << "Default." << '\n';
+                break;
+            }
+        }
+
+        return tcp_udp_s.str();
     }
 }

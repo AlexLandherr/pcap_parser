@@ -108,7 +108,7 @@ namespace pcap {
     std::string format_record_header(const pcap::Record_Header &record_header, const int &ts_decimal_places);
     std::string format_eth_header(const pcap::Eth_Header &ethernet_header);
     std::string format_IPv4_header(const pcap::IPv4_Header &IP_header);
-    std::string format_TCP_header(const pcap::TCP_Header &TCP_header);
+    std::string format_TCP_UDP_header(const pcap::IPv4_Header &IP_header, const pcap::Record &record, int &curr);
 }
 
 #endif

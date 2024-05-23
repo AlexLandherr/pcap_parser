@@ -92,7 +92,6 @@ int main() {
     while (true) {
         int curr = 0;
         //Print out Packet Records in loop.
-        //Populate record header.
         pcap::Record_Header rh = pcap::get_record_header(f_stream);
 
         //Swap check.
@@ -126,6 +125,7 @@ int main() {
                 
                 //Eventual printout/extraction of IP packet info.
                 pcap::IPv4_Header& ip = *(pcap::IPv4_Header*) &record.frame[curr];
+
                 if (std::endian::native != std::endian::big) {
                     ip.total_len = pcap::bswap16(ip.total_len);
                     ip.ID = pcap::bswap16(ip.ID);
@@ -134,45 +134,14 @@ int main() {
                 }
                 std::cout << pcap::format_IPv4_header(ip) << '\n';
 
-                //std::array<uint8_t, 40> IPv4_opts_arr;
-
                 //Extracting version and IHL values with bit masking.
                 uint16_t IHL = ip.version_IHL & ((1 << 4) - 1);
+                //std::array<uint8_t, 40> IPv4_opts_arr;
 
                 curr += IHL * 4;
 
                 //Checking protocol (TCP or UDP).
-                switch (ip.protocol) {
-                    case 0x06: {
-                        //Eventual printout/extraction of TCP info.
-                        pcap::TCP_Header& tcp = *(pcap::TCP_Header*) &record.frame[curr];
-                        if (std::endian::native != std::endian::big) {
-                            tcp.src_port = pcap::bswap16(tcp.src_port);
-                            tcp.dst_port = pcap::bswap16(tcp.dst_port);
-                            tcp.sequence_num = pcap::bswap32(tcp.sequence_num);
-                            tcp.ACK_num = pcap::bswap32(tcp.ACK_num);
-                            //Swap data_offset_reserved?
-                            //Swap flags?
-                            tcp.window_size = pcap::bswap16(tcp.window_size);
-                            tcp.chk_sum = pcap::bswap16(tcp.chk_sum);
-                            tcp.urg_pointer = pcap::bswap16(tcp.urg_pointer);
-                        }
-
-                        //Increment curr?
-                        
-                        std::cout << pcap::format_TCP_header(tcp) << '\n';
-                        
-                        break;
-                    }
-                    case 0x11: {
-                        //Eventual printout/extraction of UDP info.
-                        break;
-                    }
-                    default: {
-                        std::cout << "Default." << '\n';
-                        break;
-                    }
-                }
+                std::cout << pcap::format_TCP_UDP_header(ip, record, curr) << '\n';
 
                 //Calculate IP payload size in bytes.
                 
