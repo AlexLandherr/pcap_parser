@@ -69,33 +69,6 @@ namespace pcap {
         return r_buf;
     }
 
-    /* pcap::Eth_Header get_eth_header(const pcap::Record &record) {
-        pcap::Eth_Header eh_buf;
-
-        //.
-        std::memcpy(&eh_buf, &record.frame, sizeof(eh_buf));
-
-        return eh_buf;
-    } */
-
-    /* pcap::Eth_Frame get_eth_frame(const pcap::Record &record) {
-        pcap::Eth_Frame eth_f_buf;
-
-        //.
-        std::memcpy(&eth_f_buf, &record.frame, sizeof(eth_f_buf));
-
-        return eth_f_buf;
-    }
-
-    pcap::IPv4_Header get_IPv4_Header(const pcap::Eth_Frame &eth_frame) {
-        pcap::IPv4_Header IP_buf;
-
-        //.
-        std::memcpy(&IP_buf, &eth_frame.data, sizeof(IP_buf));
-
-        return IP_buf;
-    } */
-
     std::string format_uint32_t(const uint32_t &num) {
         std::stringstream ss;
         ss << std::hex << num;

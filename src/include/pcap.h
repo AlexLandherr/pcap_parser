@@ -2,6 +2,7 @@
 #include <vector>
 #include <cstddef>
 #include <bit>
+#include <bitset>
 #include <fstream>
 #include <array>
 #include <cstdio>
@@ -58,11 +59,6 @@ namespace pcap {
         uint16_t eth_type;
     };
 
-    /* struct Eth_Frame {
-        pcap::Eth_Header header;
-        std::array<uint8_t, 1500> data; //IP, ARP etc.
-    }; */
-
     struct IPv4_Header {
         uint8_t version_IHL;
         uint8_t DSCP_ECN;
@@ -75,6 +71,18 @@ namespace pcap {
         uint32_t src_addr;
         uint32_t dst_addr;
     };
+
+    /* struct IPv6_Header {
+        std::bitset<4> version;
+        std::bitset<6> diff_serv;
+        std::bitset<2> ECN;
+        std::bitset<20> flow_label;
+        uint16_t payload_length;
+        uint8_t next_header; //Same function as 'Protocol' field in IPv4.
+        uint8_t hop_limit; //Same as TTL in IPv4.
+        std::bitset<128> src_addr;
+        std::bitset<128> dst_addr;
+    }; */
 
     struct TCP_Header {
         uint16_t src_port;
@@ -99,8 +107,6 @@ namespace pcap {
     pcap::Record_Header get_record_header(std::FILE* f_stream);
     pcap::Record get_record(std::FILE* f_stream, const pcap::Record_Header &record_header);
     pcap::Eth_Header get_eth_header(const pcap::Record &record);
-    /* pcap::Eth_Frame get_eth_frame(const pcap::Record &record);
-    pcap::IPv4_Header get_IPv4_Header(const pcap::Eth_Frame &eth_frame); */
 
     std::string format_uint32_t(const uint32_t &num);
 
