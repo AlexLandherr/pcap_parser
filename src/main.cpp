@@ -83,7 +83,7 @@ int main() {
         std::exit(EXIT_FAILURE);
     }
 
-    std::cout << pcap::format_file_header(fh, data_endianness, ts_decimal_places);
+    std::cout << pcap::format_file_header(fh, data_endianness, ts_decimal_places) << '\n';
     std::cout << "****" << '\n';
     std::cout << "Size of 'IPv4_Header' struct in bytes: " << sizeof(pcap::IPv4_Header) << '\n';
     //std::cout << "Size of 'IPv6_Header' struct in bytes: " << sizeof(pcap::IPv6_Header) << '\n';

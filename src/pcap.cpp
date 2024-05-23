@@ -94,7 +94,7 @@ namespace pcap {
                 break;
         }
 
-        hs << "Timestamp resolution (decimal places): " << ts_decimal_places << '\n';
+        hs << "Timestamp resolution (decimal places): " << ts_decimal_places;
         
         return hs.str();
     }
