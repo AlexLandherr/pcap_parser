@@ -223,7 +223,19 @@ namespace pcap {
             }
             case 0x11: {
                 //Eventual printout/extraction of UDP info.
-                tcp_udp_s << "UDP placeholder.";
+                pcap::UDP_header& udp = *(pcap::UDP_header*) &record.frame[curr];
+                if (std::endian::native != std::endian::big) {
+                    udp.src_port = pcap::bswap16(udp.src_port);
+                    udp.dst_port = pcap::bswap16(udp.dst_port);
+                    udp.length = pcap::bswap16(udp.length);
+                    udp.chk_sum = pcap::bswap16(udp.chk_sum);
+                }
+
+                tcp_udp_s << "UDP_src_port: " << udp.src_port << ' ';
+                tcp_udp_s << "UDP_dst_port: " << udp.dst_port << ' ';
+                tcp_udp_s << "Length (header + data): " << udp.length << ' ';
+                tcp_udp_s << "chk_sum: " << udp.chk_sum;
+                
                 break;
             }
             default: {
