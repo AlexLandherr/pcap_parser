@@ -143,8 +143,6 @@ int main() {
 
                 //Checking protocol (TCP or UDP).
                 std::cout << pcap::format_TCP_UDP_header(ip, record, curr) << '\n';
-
-                //Calculate IP payload size in bytes.
                 
                 break;
             }
