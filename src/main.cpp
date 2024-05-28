@@ -21,14 +21,6 @@ int main() {
     std::endian data_endianness;
 
     std::string filename{"pcap_files/tcp_1.pcap"};
-    /* std::fstream fs{filename, std::ios::in | std::ios::binary};
-    if (!fs.is_open()) {
-        std::cerr << "Failed to open '" << filename << "'" << '\n';
-    } */
-
-    //Add try-catch statement later.
-    /* auto header_vector = pcap::to_byte_vector(fs, 0, 24);
-    pcap::Pcap_File_Header fh = pcap::populate_pcap_file_header(header_vector); */
 
     //File stream for entire program.
     std::FILE* f_stream = std::fopen(filename.c_str(), "rb");
@@ -137,7 +129,6 @@ int main() {
 
                 //Extracting IHL value with bit masking.
                 uint16_t IHL = ip.version_IHL & ((1 << 4) - 1);
-                //std::array<uint8_t, 40> IPv4_opts_arr;
 
                 curr += IHL * 4;
 
