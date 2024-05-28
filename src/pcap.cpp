@@ -186,9 +186,6 @@ namespace pcap {
                 tcp_udp_s << "Data offset: " << (uint16_t)((tcp.data_offset_reserved >> 4) & ((1 << 4) - 1)) << ' ';
                 tcp_udp_s << "Window size: " << tcp.window_size;
 
-                //Increment curr?
-                //curr += sizeof(pcap::TCP_Header);
-
                 //If data offset > 5 put options field in an array below.
                 uint8_t data_offset = ((tcp.data_offset_reserved >> 4) & ((1 << 4) - 1));
                 if (data_offset > 5) {
