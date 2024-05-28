@@ -181,16 +181,90 @@ namespace pcap {
                     tcp.urg_pointer = pcap::bswap16(tcp.urg_pointer);
                 }
 
-                //If data offset > 5 put options field in an array below.
-                uint8_t data_offset = ((tcp.data_offset_reserved >> 4) & ((1 << 4) - 1));
-
-                //Increment curr?
-                        
-                //std::cout << pcap::format_TCP_header(tcp) << '\n';
                 tcp_udp_s << "TCP_src_port: " << tcp.src_port << ' ';
                 tcp_udp_s << "TCP_dst_port: " << tcp.dst_port << ' ';
                 tcp_udp_s << "Data offset: " << (uint16_t)((tcp.data_offset_reserved >> 4) & ((1 << 4) - 1)) << ' ';
                 tcp_udp_s << "Window size: " << tcp.window_size;
+
+                //Increment curr?
+                //curr += sizeof(pcap::TCP_Header);
+
+                //If data offset > 5 put options field in an array below.
+                uint8_t data_offset = ((tcp.data_offset_reserved >> 4) & ((1 << 4) - 1));
+                if (data_offset > 5) {
+                    tcp_udp_s << "\nTCP Options Info: " << '\n';
+                    uint8_t* head = (uint8_t*)&tcp + 20;
+                    uint8_t* tail = head + ((data_offset - 5) * 4);
+
+                    while (head < tail) {
+                        switch (*head) {
+                            case 0: { //End of options list.
+                                tcp_udp_s << "//End of options list." << '\n';
+                                return 0;
+                            }
+                            case 1: { //No operation.
+                                tcp_udp_s << "//No operation." << '\n';
+                                head += 1;
+                                break;
+                            }
+                            case 2: { //Maximum segment size.
+                                tcp_udp_s << "//Maximum segment size." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 3: { //Window scale.
+                                tcp_udp_s << "//Window scale." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 4: { //Selective Acknowledgement permitted.
+                                tcp_udp_s << "//Selective Acknowledgement permitted." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 5: { //Selective ACKnowledgement (SACK).
+                                tcp_udp_s << "//Selective ACKnowledgement (SACK)." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 8: { //Timestamp and echo of previous timestamp.
+                                tcp_udp_s << "//Timestamp and echo of previous timestamp." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 28: { //User Timeout Option.
+                                tcp_udp_s << "//User Timeout Option." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 29: { //TCP Authentication Option (TCP-AO).
+                                tcp_udp_s << "//TCP Authentication Option (TCP-AO)." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 30: { //Multipath TCP (MPTCP).
+                                tcp_udp_s << "//Multipath TCP (MPTCP).";
+                                head += head[1];
+                                break;
+                            }
+                            default: {
+                                if (tail - head < 2) {
+                                    std::exit(EXIT_FAILURE);
+                                } else if (tail - head < head[1]) {
+                                    std::exit(EXIT_FAILURE);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                //Increment curr?
+                        
+                //std::cout << pcap::format_TCP_header(tcp) << '\n';
+                /* tcp_udp_s << "TCP_src_port: " << tcp.src_port << ' ';
+                tcp_udp_s << "TCP_dst_port: " << tcp.dst_port << ' ';
+                tcp_udp_s << "Data offset: " << (uint16_t)((tcp.data_offset_reserved >> 4) & ((1 << 4) - 1)) << ' ';
+                tcp_udp_s << "Window size: " << tcp.window_size; */
                         
                 break;
             }
@@ -212,7 +286,7 @@ namespace pcap {
                 break;
             }
             default: {
-                std::cout << "Default." << '\n';
+                tcp_udp_s << "Default." << '\n';
                 break;
             }
         }

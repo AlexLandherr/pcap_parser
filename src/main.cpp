@@ -135,7 +135,7 @@ int main() {
                 }
                 std::cout << pcap::format_IPv4_header(ip) << '\n';
 
-                //Extracting version and IHL values with bit masking.
+                //Extracting IHL value with bit masking.
                 uint16_t IHL = ip.version_IHL & ((1 << 4) - 1);
                 //std::array<uint8_t, 40> IPv4_opts_arr;
 
