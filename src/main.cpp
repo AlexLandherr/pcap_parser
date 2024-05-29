@@ -110,44 +110,9 @@ int main() {
         std::cout << "Record " << count << ":" << '\n';
         std::cout << pcap::format_record_header(record.header, ts_decimal_places);
 
-        //Checking EtherType.
-        switch (eth->eth_type) {
-            case 0x0800: {
-                std::cout << "EtherType: IPv4." << '\n';
-                std::cout << pcap::format_eth_header(*eth) << '\n';
-                
-                //Eventual printout/extraction of IP packet info.
-                pcap::IPv4_Header& ip = *(pcap::IPv4_Header*) &record.frame[curr];
-
-                if (std::endian::native != std::endian::big) {
-                    ip.total_len = pcap::bswap16(ip.total_len);
-                    ip.ID = pcap::bswap16(ip.ID);
-                    ip.flag_frag_offset = pcap::bswap16(ip.flag_frag_offset);
-                    ip.header_chksum = pcap::bswap16(ip.header_chksum);
-                }
-                std::cout << pcap::format_IPv4_header(ip) << '\n';
-
-                //Extracting IHL value with bit masking.
-                uint16_t IHL = ip.version_IHL & ((1 << 4) - 1);
-
-                curr += IHL * 4;
-
-                //Checking protocol (TCP or UDP).
-                std::cout << pcap::format_TCP_UDP_header(ip, record, curr) << '\n';
-                
-                break;
-            }
-            case 0x86DD: {
-                std::cout << "EtherType: IPv6." << '\n';
-                std::cout << pcap::format_eth_header(*eth) << '\n';
-                //Eventual printout/extraction of IP packet info.
-                break;
-            }
-            default: {
-                std::cout << "Default." << '\n';
-                break;
-            }
-        }
+        /*Determine EtherType (IPv4 or IPv6) aka OSI level 3 and format said header,
+          then determine TCP or UDP (OSI level 4) and format said header.*/
+        pcap::format_IPv4_IPv6_header(eth, record, curr);
         
         std::cout << '\n';
 

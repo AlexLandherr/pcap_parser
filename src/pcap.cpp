@@ -309,4 +309,208 @@ namespace pcap {
 
         return tcp_udp_s.str();
     }
+
+    void format_IPv4_IPv6_header(pcap::Eth_Header* eth_header, const pcap::Record &record, int &curr) {
+        //Checking EtherType.
+        switch (eth_header->eth_type) {
+            case 0x0800: {
+                std::cout << "EtherType: IPv4." << '\n';
+                std::cout << pcap::format_eth_header(*eth_header) << '\n';
+                
+                //Printout/extraction of IPv4 packet info.
+                pcap::IPv4_Header& ip = *(pcap::IPv4_Header*) &record.frame[curr];
+
+                if (std::endian::native != std::endian::big) {
+                    ip.total_len = pcap::bswap16(ip.total_len);
+                    ip.ID = pcap::bswap16(ip.ID);
+                    ip.flag_frag_offset = pcap::bswap16(ip.flag_frag_offset);
+                    ip.header_chksum = pcap::bswap16(ip.header_chksum);
+                }
+                std::cout << pcap::format_IPv4_header(ip) << '\n';
+
+                //Extracting IHL value with bit masking.
+                //If IHL > 5 read options field.
+                uint16_t IHL = ip.version_IHL & ((1 << 4) - 1);
+                if (IHL > 5) {
+                    std::cout << "IPv4 Options Info:" << '\n';
+                    uint8_t* head = (uint8_t*)&ip + 20;
+                    uint8_t* tail = head + ((IHL - 5) * 4);
+
+                    while (head < tail) {
+                        switch (*head) {
+                            case 0: {
+                                std::cout << "End of options list." << '\n';
+                                break;
+                            }
+                            case 1: {
+                                std::cout << "No operation." << '\n';
+                                head += 1;
+                                break;
+                            }
+                            /* case 2: {
+                                std::cout << "Security (defunct)." << '\n';
+                                break;
+                            } */
+                            case 7: {
+                                std::cout << "Record Route." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 10: {
+                                std::cout << "ZSU - Experimental Measurement." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 11: {
+                                std::cout << "MTUP - MTU Probe." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 12: {
+                                std::cout << "MTUR - MTU Reply." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 15: {
+                                std::cout << "ENCODE." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 25: {
+                                std::cout << "QS - Quick Start." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 30: {
+                                std::cout << "EXP - RFC3692-style Experiment." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 68: {
+                                std::cout << "TS - Time Stamp." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 82: {
+                                std::cout << "TR - Traceroute." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 94: {
+                                std::cout << "EXP - RFC3692-style experiment." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 130: {
+                                std::cout << "SEC - Security (RIPSO)." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 131: {
+                                std::cout << "LSR - Loose Source Route." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 133: {
+                                std::cout << "E-SEC - Extended Security (RIPSO)." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 134: {
+                                std::cout << "CIPSO - Commercial IP Security Option." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 136: {
+                                std::cout << "SID - Stream ID." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 137: {
+                                std::cout << "SSR - Strict Source Route." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 142: {
+                                std::cout << "VISA - Experimental Access Control." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 144: {
+                                std::cout << "IMITD - IMI Traffic Descriptor." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 145: {
+                                std::cout << "EIP - Extended Internet Protocol." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 147: {
+                                std::cout << "ADDEXT - Address Extension." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 148: {
+                                std::cout << "RTRALT - Router Alert." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 149: {
+                                std::cout << "SDB - Selective Direct Broadcast." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 151: {
+                                std::cout << "DPS - Dynamic Packet State." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 152: {
+                                std::cout << "UMP - Upstream Multicast Packet." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 158: {
+                                std::cout << "EXP - RFC3692-style Experiment." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 205: {
+                                std::cout << "FINN - Experimental Flow Control." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            case 222: {
+                                std::cout << "EXP - RFC3692-style Experiment." << '\n';
+                                head += head[1];
+                                break;
+                            }
+                            default: {
+                                std::cout << "Option Type not recognized, exiting program." << '\n';
+                                std::exit(EXIT_FAILURE);
+                            }
+                        }
+                    }
+                }
+
+                curr += IHL * 4;
+
+                //Checking protocol (TCP or UDP).
+                std::cout << pcap::format_TCP_UDP_header(ip, record, curr) << '\n';
+                
+                break;
+            }
+            case 0x86DD: {
+                std::cout << "EtherType: IPv6." << '\n';
+                std::cout << pcap::format_eth_header(*eth_header) << '\n';
+                //Eventual printout/extraction of IP packet info.
+                break;
+            }
+            default: {
+                std::cout << "Default." << '\n';
+                break;
+            }
+        }
+    }
 }
