@@ -186,7 +186,7 @@ namespace pcap {
                 tcp_udp_s << "Data offset: " << (uint16_t)((tcp.data_offset_reserved >> 4) & ((1 << 4) - 1)) << ' ';
                 tcp_udp_s << "Window size: " << tcp.window_size;
 
-                //If data offset > 5 put options field in an array below.
+                //If data offset > 5 read options field.
                 uint8_t data_offset = ((tcp.data_offset_reserved >> 4) & ((1 << 4) - 1));
                 if (data_offset > 5) {
                     tcp_udp_s << "\nTCP Options Info: " << '\n';
@@ -205,41 +205,66 @@ namespace pcap {
                                 break;
                             }
                             case 2: { //Maximum segment size.
+                                if (head[1] != 4 && !((tcp.flags >> 1) & 1)) {
+                                    std::exit(EXIT_FAILURE);
+                                }
                                 tcp_udp_s << "//Maximum segment size." << '\n';
                                 head += head[1];
                                 break;
                             }
                             case 3: { //Window scale.
+                                if (head[1] != 3 && !((tcp.flags >> 1) & 1)) {
+                                    std::exit(EXIT_FAILURE);
+                                }
                                 tcp_udp_s << "//Window scale." << '\n';
                                 head += head[1];
                                 break;
                             }
                             case 4: { //Selective Acknowledgement permitted.
+                                if (head[1] != 2 && !((tcp.flags >> 1) & 1)) {
+                                    std::exit(EXIT_FAILURE);
+                                }
                                 tcp_udp_s << "//Selective Acknowledgement permitted." << '\n';
                                 head += head[1];
                                 break;
                             }
                             case 5: { //Selective ACKnowledgement (SACK).
+                                const std::array<uint8_t, 4> good_values = {10, 18, 26, 34};
+                                if (std::find(good_values.begin(), good_values.end(), head[1]) != good_values.end()) {
+                                    std::exit(EXIT_FAILURE);
+                                }
                                 tcp_udp_s << "//Selective ACKnowledgement (SACK)." << '\n';
                                 head += head[1];
                                 break;
                             }
                             case 8: { //Timestamp and echo of previous timestamp.
+                                if (head[1] != 10) {
+                                    std::exit(EXIT_FAILURE);
+                                }
                                 tcp_udp_s << "//Timestamp and echo of previous timestamp." << '\n';
                                 head += head[1];
                                 break;
                             }
                             case 28: { //User Timeout Option.
+                                if (head[1] != 4) {
+                                    std::exit(EXIT_FAILURE);
+                                }
                                 tcp_udp_s << "//User Timeout Option." << '\n';
                                 head += head[1];
                                 break;
                             }
                             case 29: { //TCP Authentication Option (TCP-AO).
+                                if (!(head[1] <= (tail - head))) {
+                                    std::exit(EXIT_FAILURE);
+                                }
                                 tcp_udp_s << "//TCP Authentication Option (TCP-AO)." << '\n';
                                 head += head[1];
                                 break;
                             }
                             case 30: { //Multipath TCP (MPTCP).
+                                if (!(head[1] <= (tail - head))) {
+                                    std::exit(EXIT_FAILURE);
+                                }
                                 tcp_udp_s << "//Multipath TCP (MPTCP).";
                                 head += head[1];
                                 break;
@@ -256,12 +281,6 @@ namespace pcap {
                 }
 
                 //Increment curr?
-                        
-                //std::cout << pcap::format_TCP_header(tcp) << '\n';
-                /* tcp_udp_s << "TCP_src_port: " << tcp.src_port << ' ';
-                tcp_udp_s << "TCP_dst_port: " << tcp.dst_port << ' ';
-                tcp_udp_s << "Data offset: " << (uint16_t)((tcp.data_offset_reserved >> 4) & ((1 << 4) - 1)) << ' ';
-                tcp_udp_s << "Window size: " << tcp.window_size; */
                         
                 break;
             }
