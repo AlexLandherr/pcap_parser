@@ -205,28 +205,31 @@ namespace pcap {
                                 break;
                             }
                             case 2: { //Maximum segment size.
-                                if (head[1] != 4 && !((tcp.flags >> 1) & 1)) {
+                                if (head[1] == 4 && ((tcp.flags >> 1) & 1)) {
+                                    tcp_udp_s << "//Maximum segment size." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
                                     std::exit(EXIT_FAILURE);
                                 }
-                                tcp_udp_s << "//Maximum segment size." << '\n';
-                                head += head[1];
-                                break;
                             }
                             case 3: { //Window scale.
-                                if (head[1] != 3 && !((tcp.flags >> 1) & 1)) {
+                                if (head[1] == 3 && ((tcp.flags >> 1) & 1)) {
+                                    tcp_udp_s << "//Window scale." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
                                     std::exit(EXIT_FAILURE);
                                 }
-                                tcp_udp_s << "//Window scale." << '\n';
-                                head += head[1];
-                                break;
                             }
                             case 4: { //Selective Acknowledgement permitted.
-                                if (head[1] != 2 && !((tcp.flags >> 1) & 1)) {
+                                if (head[1] == 2 && ((tcp.flags >> 1) & 1)) {
+                                    tcp_udp_s << "//Selective Acknowledgement permitted." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
                                     std::exit(EXIT_FAILURE);
                                 }
-                                tcp_udp_s << "//Selective Acknowledgement permitted." << '\n';
-                                head += head[1];
-                                break;
                             }
                             case 5: { //Selective ACKnowledgement (SACK).
                                 const std::array<uint8_t, 4> good_values = {10, 18, 26, 34};
@@ -238,36 +241,40 @@ namespace pcap {
                                 break;
                             }
                             case 8: { //Timestamp and echo of previous timestamp.
-                                if (head[1] != 10) {
+                                if (head[1] == 10) {
+                                    tcp_udp_s << "//Timestamp and echo of previous timestamp." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
                                     std::exit(EXIT_FAILURE);
                                 }
-                                tcp_udp_s << "//Timestamp and echo of previous timestamp." << '\n';
-                                head += head[1];
-                                break;
                             }
                             case 28: { //User Timeout Option.
-                                if (head[1] != 4) {
+                                if (head[1] == 4) {
+                                    tcp_udp_s << "//User Timeout Option." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
                                     std::exit(EXIT_FAILURE);
                                 }
-                                tcp_udp_s << "//User Timeout Option." << '\n';
-                                head += head[1];
-                                break;
                             }
                             case 29: { //TCP Authentication Option (TCP-AO).
-                                if (!(head[1] <= (tail - head))) {
+                                if (head[1] <= (tail - head)) {
+                                    tcp_udp_s << "//TCP Authentication Option (TCP-AO)." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
                                     std::exit(EXIT_FAILURE);
                                 }
-                                tcp_udp_s << "//TCP Authentication Option (TCP-AO)." << '\n';
-                                head += head[1];
-                                break;
                             }
                             case 30: { //Multipath TCP (MPTCP).
-                                if (!(head[1] <= (tail - head))) {
+                                if (head[1] <= (tail - head)) {
+                                    tcp_udp_s << "//Multipath TCP (MPTCP).";
+                                    head += head[1];
+                                    break;
+                                } else {
                                     std::exit(EXIT_FAILURE);
                                 }
-                                tcp_udp_s << "//Multipath TCP (MPTCP).";
-                                head += head[1];
-                                break;
                             }
                             default: {
                                 if (tail - head < 2) {
@@ -339,22 +346,34 @@ namespace pcap {
                     while (head < tail) {
                         switch (*head) {
                             case 0: {
-                                std::cout << "End of options list." << '\n';
-                                break;
+                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0 /* && (head[0] & 0b11111) == 0 */) {
+                                    std::cout << "End of options list." << '\n';
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 1: {
-                                std::cout << "No operation." << '\n';
-                                head += 1;
-                                break;
+                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0 /* && (head[0] & 0b11111) == 1 */) {
+                                    std::cout << "No operation." << '\n';
+                                    head += 1;
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             /* case 2: {
                                 std::cout << "Security (defunct)." << '\n';
                                 break;
                             } */
                             case 7: {
-                                std::cout << "Record Route." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0 /* && (head[0] & 0b11111) == 7 */) {
+                                    std::cout << "Record Route." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 10: {
                                 std::cout << "ZSU - Experimental Measurement." << '\n';
@@ -362,129 +381,229 @@ namespace pcap {
                                 break;
                             }
                             case 11: {
-                                std::cout << "MTUP - MTU Probe." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0 /* && (head[0] & 0b11111) == 11 */) {
+                                    std::cout << "MTUP - MTU Probe." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 12: {
-                                std::cout << "MTUR - MTU Reply." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0 /* && (head[0] & 0b11111) == 12 */) {
+                                    std::cout << "MTUR - MTU Reply." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 15: {
-                                std::cout << "ENCODE." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0 /* && (head[0] & 0b11111) == 15 */) {
+                                    std::cout << "ENCODE." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 25: {
-                                std::cout << "QS - Quick Start." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0 /* && (head[0] & 0b11111) == 25 */) {
+                                    std::cout << "QS - Quick Start." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 30: {
-                                std::cout << "EXP - RFC3692-style Experiment." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0 /* && (head[0] & 0b11111) == 30 */) {
+                                    std::cout << "EXP - RFC3692-style Experiment." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 68: {
-                                std::cout << "TS - Time Stamp." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 2 && (head[0] & 0b11111) == 4) {
+                                    std::cout << "TS - Time Stamp." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 82: {
-                                std::cout << "TR - Traceroute." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 2 && (head[0] & 0b11111) == 18) {
+                                    std::cout << "TR - Traceroute." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 94: {
-                                std::cout << "EXP - RFC3692-style experiment." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 2 && (head[0] & 0b11111) == 30) {
+                                    std::cout << "EXP - RFC3692-style experiment." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 130: {
-                                std::cout << "SEC - Security (RIPSO)." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 1 && ((head[0] >> 5) & 0b11) == 0 && (head[0] & 0b11111) == 2) {
+                                    std::cout << "SEC - Security (RIPSO)." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 131: {
-                                std::cout << "LSR - Loose Source Route." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 1 && ((head[0] >> 5) & 0b11) == 0 && (head[0] & 0b11111) == 3) {
+                                    std::cout << "LSR - Loose Source Route." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 133: {
-                                std::cout << "E-SEC - Extended Security (RIPSO)." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 1 && ((head[0] >> 5) & 0b11) == 0 && (head[0] & 0b11111) == 5) {
+                                    std::cout << "E-SEC - Extended Security (RIPSO)." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 134: {
-                                std::cout << "CIPSO - Commercial IP Security Option." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 1 && ((head[0] >> 5) & 0b11) == 0 && (head[0] & 0b11111) == 6) {
+                                    std::cout << "CIPSO - Commercial IP Security Option." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 136: {
-                                std::cout << "SID - Stream ID." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 1 && ((head[0] >> 5) & 0b11) == 0 && (head[0] & 0b11111) == 8) {
+                                    std::cout << "SID - Stream ID." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 137: {
-                                std::cout << "SSR - Strict Source Route." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 1 && ((head[0] >> 5) & 0b11) == 0 && (head[0] & 0b11111) == 9) {
+                                    std::cout << "SSR - Strict Source Route." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 142: {
-                                std::cout << "VISA - Experimental Access Control." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 1 && ((head[0] >> 5) & 0b11) == 0 && (head[0] & 0b11111) == 14) {
+                                    std::cout << "VISA - Experimental Access Control." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 144: {
-                                std::cout << "IMITD - IMI Traffic Descriptor." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 1 && ((head[0] >> 5) & 0b11) == 0 && (head[0] & 0b11111) == 16) {
+                                    std::cout << "IMITD - IMI Traffic Descriptor." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 145: {
-                                std::cout << "EIP - Extended Internet Protocol." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 1 && ((head[0] >> 5) & 0b11) == 0 && (head[0] & 0b11111) == 17) {
+                                    std::cout << "EIP - Extended Internet Protocol." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 147: {
-                                std::cout << "ADDEXT - Address Extension." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 1 && ((head[0] >> 5) & 0b11) == 0 && (head[0] & 0b11111) == 19) {
+                                    std::cout << "ADDEXT - Address Extension." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 148: {
-                                std::cout << "RTRALT - Router Alert." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 1 && ((head[0] >> 5) & 0b11) == 0 && (head[0] & 0b11111) == 20) {
+                                    std::cout << "RTRALT - Router Alert." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 149: {
-                                std::cout << "SDB - Selective Direct Broadcast." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 1 && ((head[0] >> 5) & 0b11) == 0 && (head[0] & 0b11111) == 21) {
+                                    std::cout << "SDB - Selective Direct Broadcast." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 151: {
-                                std::cout << "DPS - Dynamic Packet State." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 1 && ((head[0] >> 5) & 0b11) == 0 && (head[0] & 0b11111) == 23) {
+                                    std::cout << "DPS - Dynamic Packet State." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 152: {
-                                std::cout << "UMP - Upstream Multicast Packet." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 1 && ((head[0] >> 5) & 0b11) == 0 && (head[0] & 0b11111) == 24) {
+                                    std::cout << "UMP - Upstream Multicast Packet." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 158: {
-                                std::cout << "EXP - RFC3692-style Experiment." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 1 && ((head[0] >> 5) & 0b11) == 0 && (head[0] & 0b11111) == 30) {
+                                    std::cout << "EXP - RFC3692-style Experiment." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 205: {
-                                std::cout << "FINN - Experimental Flow Control." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 1 && ((head[0] >> 5) & 0b11) == 2 && (head[0] & 0b11111) == 13) {
+                                    std::cout << "FINN - Experimental Flow Control." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             case 222: {
-                                std::cout << "EXP - RFC3692-style Experiment." << '\n';
-                                head += head[1];
-                                break;
+                                if (((head[0] >> 7) & 1) == 1 && ((head[0] >> 5) & 0b11) == 2 && (head[0] & 0b11111) == 30) {
+                                    std::cout << "EXP - RFC3692-style Experiment." << '\n';
+                                    head += head[1];
+                                    break;
+                                } else {
+                                    std::exit(EXIT_FAILURE);
+                                }
                             }
                             default: {
                                 std::cout << "Option Type not recognized, exiting program." << '\n';
