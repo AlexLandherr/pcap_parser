@@ -103,7 +103,7 @@ namespace pcap {
         std::stringstream rs;
         rs << "Unix: " << record_header.ts_seconds << "." << std::setw(ts_decimal_places) << std::setfill('0') << record_header.ts_frac << " ";
         rs << "CapLen: " << record_header.CapLen << " ";
-        rs << "OrigLen: " << record_header.OrigLen << '\n';
+        rs << "OrigLen: " << record_header.OrigLen << '\n' << "******" << '\n';
 
         return rs.str();
     }
@@ -129,7 +129,23 @@ namespace pcap {
         (uint16_t)ethernet_header.src_mac_addr[5] << " ";
 
         //Get EtherType.
-        eth_s << "eth_type: " << std::setw(4) << std::setfill('0') << std::showbase << ethernet_header.eth_type;
+        eth_s << "eth_type: " << std::setw(4) << std::setfill('0') << std::showbase << ethernet_header.eth_type << ' ';
+        switch (ethernet_header.eth_type) {
+            case 0x0800: {
+                eth_s << "(IPv4)";
+                break;
+            }
+            case 0x86DD: {
+                eth_s << "(IPv6)";
+                break;
+            }
+            default: {
+                eth_s << "(Default.)";
+                break;
+            }
+        }
+
+        eth_s << '\n' << "******";
 
         return eth_s.str();
     }
@@ -137,11 +153,24 @@ namespace pcap {
     std::string format_IPv4_header(const pcap::IPv4_Header &IP_header) {
         std::stringstream IP_s;
 
-        IP_s << "IP version: " << (uint16_t)((IP_header.version_IHL >> 4) & ((1 << 4) - 1)) << ' ';
+        IP_s << "IPv" << (uint16_t)((IP_header.version_IHL >> 4) & ((1 << 4) - 1)) << ' ';
         IP_s << "IHL: " << (uint16_t)(IP_header.version_IHL & ((1 << 4) - 1)) << ' ';
         IP_s << "Total Length: " << IP_header.total_len << ' ';
         IP_s << "TTL: " << (uint16_t)IP_header.TTL << ' ';
-        IP_s << "Protocol: " << (uint16_t)IP_header.protocol << ' ';
+        switch (IP_header.protocol) {
+            case 0x06: {
+                IP_s << "Protocol: 0x06 (TCP) ";
+                break;
+            }
+            case 0x11: {
+                IP_s << "Protocol: 0x11 (UDP) ";
+                break;
+            }
+            default: {
+                IP_s << "Protocol: Default. ";
+                break;
+            }
+        }
 
         //Getting source & destination IPv4 address.
         //src_IPv4.
@@ -157,7 +186,9 @@ namespace pcap {
         uint16_t dst_d = (IP_header.dst_addr >> (8 * 3)) & 0xff;
 
         IP_s << "src_IPv4: " << src_a << "." << src_b << "." << src_c << "." << src_d << ' ';
-        IP_s << "dst_IPv4: " << dst_a << "." << dst_b << "." << dst_c << "." << dst_d;
+        IP_s << "dst_IPv4: " << dst_a << "." << dst_b << "." << dst_c << "." << dst_d << '\n';
+
+        IP_s << "******";
 
         return IP_s.str();
     }
@@ -167,7 +198,7 @@ namespace pcap {
 
         switch (IP_header.protocol) {
             case 0x06: {
-                //Eventual printout/extraction of TCP info.
+                //Printout/extraction of TCP info.
                 pcap::TCP_Header& tcp = *(pcap::TCP_Header*) &record.frame[curr];
                 if (std::endian::native != std::endian::big) {
                     tcp.src_port = pcap::bswap16(tcp.src_port);
@@ -184,10 +215,16 @@ namespace pcap {
                 tcp_udp_s << "TCP_src_port: " << tcp.src_port << ' ';
                 tcp_udp_s << "TCP_dst_port: " << tcp.dst_port << ' ';
                 tcp_udp_s << "Data offset: " << (uint16_t)((tcp.data_offset_reserved >> 4) & ((1 << 4) - 1)) << ' ';
-                tcp_udp_s << "Window size: " << tcp.window_size;
+                tcp_udp_s << "Window size: " << tcp.window_size << ' ';
 
                 //If data offset > 5 read options field.
                 uint8_t data_offset = ((tcp.data_offset_reserved >> 4) & ((1 << 4) - 1));
+
+                //Get size of TCP data section.
+                uint16_t IHL = IP_header.version_IHL & ((1 << 4) - 1);
+                uint32_t TCP_data_size = IP_header.total_len - ((data_offset * 4) + (IHL * 4));
+                tcp_udp_s << "TCP data (bytes): " << TCP_data_size;
+                
                 if (data_offset > 5) {
                     tcp_udp_s << "\nTCP Options Info: " << '\n';
                     uint8_t* head = (uint8_t*)&tcp + 20;
@@ -288,7 +325,10 @@ namespace pcap {
                 }
 
                 //Increment curr?
-                        
+                curr += data_offset * 4;
+
+                //If TCP_data_size > than_some_value print/parse it?
+
                 break;
             }
             case 0x11: {
@@ -321,7 +361,6 @@ namespace pcap {
         //Checking EtherType.
         switch (eth_header->eth_type) {
             case 0x0800: {
-                std::cout << "EtherType: IPv4." << '\n';
                 std::cout << pcap::format_eth_header(*eth_header) << '\n';
                 
                 //Printout/extraction of IPv4 packet info.
@@ -621,7 +660,6 @@ namespace pcap {
                 break;
             }
             case 0x86DD: {
-                std::cout << "EtherType: IPv6." << '\n';
                 std::cout << pcap::format_eth_header(*eth_header) << '\n';
                 //Eventual printout/extraction of IP packet info.
                 break;
