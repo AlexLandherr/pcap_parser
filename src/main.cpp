@@ -20,7 +20,7 @@ int main() {
     int ts_decimal_places = 0;
     std::endian data_endianness;
 
-    std::string filename{"pcap_files/tcp_1.pcap"};
+    std::string filename{"pcap_files/webtraffic.pcap"};
 
     //File stream for entire program.
     std::FILE* f_stream = std::fopen(filename.c_str(), "rb");
@@ -77,9 +77,9 @@ int main() {
 
     std::cout << pcap::format_file_header(fh, data_endianness, ts_decimal_places) << '\n';
     std::cout << "****" << '\n';
-    std::cout << "Size of 'IPv4_Header' struct in bytes: " << sizeof(pcap::IPv4_Header) << '\n';
+    //std::cout << "Size of 'IPv4_Header' struct in bytes: " << sizeof(pcap::IPv4_Header) << '\n';
     //std::cout << "Size of 'IPv6_Header' struct in bytes: " << sizeof(pcap::IPv6_Header) << '\n';
-    std::cout << "****" << '\n';
+    //std::cout << "****" << '\n';
     
     int count = 1;
     while (true) {
