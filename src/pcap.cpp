@@ -113,21 +113,21 @@ namespace pcap {
         std::stringstream eth_s;
 
         //Get destination & source MAC address.
-        eth_s << "dst_mac: " << std::hex << std::setw(2) << std::setfill('0') <<
-        (uint16_t)ethernet_header.dst_mac_addr[0] << ":" <<
-        (uint16_t)ethernet_header.dst_mac_addr[1] << ":" <<
-        (uint16_t)ethernet_header.dst_mac_addr[2] << ":" <<
-        (uint16_t)ethernet_header.dst_mac_addr[3] << ":" <<
-        (uint16_t)ethernet_header.dst_mac_addr[4] << ":" <<
-        (uint16_t)ethernet_header.dst_mac_addr[5] << " ";
+        eth_s << "dst_mac: " << std::hex << std::setfill('0') <<
+        std::setw(2) << (uint16_t)ethernet_header.dst_mac_addr[0] << ":" <<
+        std::setw(2) << (uint16_t)ethernet_header.dst_mac_addr[1] << ":" <<
+        std::setw(2) << (uint16_t)ethernet_header.dst_mac_addr[2] << ":" <<
+        std::setw(2) << (uint16_t)ethernet_header.dst_mac_addr[3] << ":" <<
+        std::setw(2) << (uint16_t)ethernet_header.dst_mac_addr[4] << ":" <<
+        std::setw(2) << (uint16_t)ethernet_header.dst_mac_addr[5] << " ";
 
-        eth_s << "src_mac: " /* << std::hex << std::setw(2) << std::setfill('0') */ <<
-        (uint16_t)ethernet_header.src_mac_addr[0] << ":" <<
-        (uint16_t)ethernet_header.src_mac_addr[1] << ":" <<
-        (uint16_t)ethernet_header.src_mac_addr[2] << ":" <<
-        (uint16_t)ethernet_header.src_mac_addr[3] << ":" <<
-        (uint16_t)ethernet_header.src_mac_addr[4] << ":" <<
-        (uint16_t)ethernet_header.src_mac_addr[5] << " ";
+        eth_s << "src_mac: " <<
+        std::setw(2) << (uint16_t)ethernet_header.src_mac_addr[0] << ":" <<
+        std::setw(2) << (uint16_t)ethernet_header.src_mac_addr[1] << ":" <<
+        std::setw(2) << (uint16_t)ethernet_header.src_mac_addr[2] << ":" <<
+        std::setw(2) << (uint16_t)ethernet_header.src_mac_addr[3] << ":" <<
+        std::setw(2) << (uint16_t)ethernet_header.src_mac_addr[4] << ":" <<
+        std::setw(2) << (uint16_t)ethernet_header.src_mac_addr[5] << " ";
 
         //Get EtherType.
         eth_s << "eth_type: " << std::setw(4) << std::setfill('0') << std::showbase << ethernet_header.eth_type << ' ';
@@ -193,6 +193,25 @@ namespace pcap {
 
         return IP_s.str();
     }
+
+    /* std::string format_HTTP_header(const pcap::Record &record, int &curr, std::stringstream &tcp_udp_s, const pcap::TCP_Header &tcp, const uint32_t &TCP_data_size) {
+        std::string tcp_data_str = "";
+        uint8_t* head_tcp_data = (uint8_t*)&record.frame[curr];
+        uint8_t* tail_tcp_data = head_tcp_data + TCP_data_size;
+
+        if (tcp.src_port == 8080 || tcp.dst_port == 8080) {
+            while (head_tcp_data < tail_tcp_data) {
+                if (*head_tcp_data == '\r' || *head_tcp_data == '\n') {
+                    break;
+                } else {
+                    tcp_data_str.push_back(*head_tcp_data);
+                }
+            }
+            head_tcp_data += 1;
+        }
+
+        return tcp_data_str;
+    } */
 
     std::string format_TCP_UDP_header(const pcap::IPv4_Header &IP_header, const pcap::Record &record, int &curr) {
         std::stringstream tcp_udp_s;
@@ -331,25 +350,17 @@ namespace pcap {
 
                 //If TCP_data_size > than_some_value print/parse it?
                 //Test printout of TCP data section (assumes regular text).
+                //Replace with function.
                 if (TCP_data_size > 0) {
+                    /* tcp_udp_s << "\nTCP text data:" << '\n';
+                    tcp_udp_s << pcap::format_HTTP_header(record, curr, tcp_udp_s, tcp, TCP_data_size); */
                     std::string tcp_data_str = "";
                     uint8_t* head_tcp_data = (uint8_t*)&record.frame[curr];
                     uint8_t* tail_tcp_data = head_tcp_data + TCP_data_size;
 
-                    while (head_tcp_data < tail_tcp_data) {
-                        if (*head_tcp_data == '\r' || *head_tcp_data == '\n') {
-                            break;
-                        } else {
-                            tcp_data_str.push_back(*head_tcp_data);
-                        }
-                        head_tcp_data += 1;
-                    }
-                    tcp_udp_s << "\nTCP text data:" << '\n';
-                    tcp_udp_s << tcp_data_str;
-
-                    /* if (tcp.src_port == 80 || tcp.dst_port == 80) {
+                    if (tcp.src_port == 8080 || tcp.dst_port == 8080) {
                         while (head_tcp_data < tail_tcp_data) {
-                            if (std::isspace(*head_tcp_data)) {
+                            if (*head_tcp_data == '\r' || *head_tcp_data == '\n') {
                                 break;
                             } else {
                                 tcp_data_str.push_back(*head_tcp_data);
@@ -357,8 +368,8 @@ namespace pcap {
                             head_tcp_data += 1;
                         }
                         tcp_udp_s << "\nTCP text data:" << '\n';
-                        tcp_udp_s << tcp_data_str;
-                    } */
+                        tcp_udp_s << tcp_data_str; 
+                    }
                 }
 
                 tcp_udp_s << "\n******";
