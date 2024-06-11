@@ -121,7 +121,7 @@ namespace pcap {
         (uint16_t)ethernet_header.dst_mac_addr[4] << ":" <<
         (uint16_t)ethernet_header.dst_mac_addr[5] << " ";
 
-        eth_s << "src_mac: " << std::hex << std::setw(2) << std::setfill('0') <<
+        eth_s << "src_mac: " /* << std::hex << std::setw(2) << std::setfill('0') */ <<
         (uint16_t)ethernet_header.src_mac_addr[0] << ":" <<
         (uint16_t)ethernet_header.src_mac_addr[1] << ":" <<
         (uint16_t)ethernet_header.src_mac_addr[2] << ":" <<
@@ -233,19 +233,16 @@ namespace pcap {
 
                     while (head < tail) {
                         switch (*head) {
-                            case 0: { //End of options list. NULL pointer somewhere in here?
-                                std::cout << "EOL." << '\n';
-                                tcp_udp_s << "EOL" << ' ';
-                                return 0;
+                            case 0: { //End of options list.
+                                head += 1;
+                                break;
                             }
                             case 1: { //No operation.
-                                std::cout << "NOP." << '\n';
                                 tcp_udp_s << "NOP" << ' ';
                                 head += 1;
                                 break;
                             }
                             case 2: { //Maximum segment size.
-                                std::cout << "MSS." << '\n';
                                 if (head[1] == 4 && ((tcp.flags >> 1) & 1)) {
                                     tcp_udp_s << "MSS" << ' ';
                                     head += head[1];
@@ -256,32 +253,26 @@ namespace pcap {
                                 }
                             }
                             case 3: { //Window scale.
-                                std::cout << "WS." << '\n';
                                 if (head[1] == 3 && ((tcp.flags >> 1) & 1)) {
                                     tcp_udp_s << "WS" << ' ';
                                     head += head[1];
                                     break;
                                 } else {
-                                    std::cout << "Failure on WS." << '\n';
                                     std::exit(EXIT_FAILURE);
                                 }
                             }
                             case 4: { //Selective Acknowledgement permitted.
-                                std::cout << "SACK_permitted." << '\n';
                                 if (head[1] == 2 && ((tcp.flags >> 1) & 1)) {
                                     tcp_udp_s << "SACK_permitted" << ' ';
                                     head += head[1];
                                     break;
                                 } else {
-                                    std::cout << "Failure on SACK_permitted." << '\n';
                                     std::exit(EXIT_FAILURE);
                                 }
                             }
                             case 5: { //Selective ACKnowledgement (SACK).
-                                std::cout << "SACK." << '\n';
                                 const std::array<uint8_t, 4> good_values = {10, 18, 26, 34};
                                 if (std::find(good_values.begin(), good_values.end(), head[1]) != good_values.end()) {
-                                    std::cout << "Failure on SACK." << '\n';
                                     std::exit(EXIT_FAILURE);
                                 }
                                 tcp_udp_s << "SACK" << ' ';
@@ -289,52 +280,43 @@ namespace pcap {
                                 break;
                             }
                             case 8: { //Timestamp and echo of previous timestamp.
-                                std::cout << "TS_Echo_Prior_TS." << '\n';
                                 if (head[1] == 10) {
                                     tcp_udp_s << "TS_Echo_Prior_TS" << ' ';
                                     head += head[1];
                                     break;
                                 } else {
-                                    std::cout << "Failure on TS_Echo_Prior_TS." << '\n';
                                     std::exit(EXIT_FAILURE);
                                 }
                             }
                             case 28: { //User Timeout Option.
-                                std::cout << "User Timeout Option." << '\n';
                                 if (head[1] == 4) {
                                     tcp_udp_s << "UTO" << ' ';
                                     head += head[1];
                                     break;
                                 } else {
-                                    std::cout << "Failure on User Timeout Option." << '\n';
                                     std::exit(EXIT_FAILURE);
                                 }
                             }
                             case 29: { //TCP Authentication Option (TCP-AO).
-                                std::cout << "TCP-AO." << '\n';
                                 if (head[1] <= (tail - head)) {
                                     tcp_udp_s << "TCP-AO" << ' ';
                                     head += head[1];
                                     break;
                                 } else {
-                                    std::cout << "Failure on TCP-AO." << '\n';
                                     std::exit(EXIT_FAILURE);
                                 }
                             }
                             case 30: { //Multipath TCP (MPTCP).
-                                std::cout << "MPTCP." << '\n';
                                 if (head[1] <= (tail - head)) {
                                     tcp_udp_s << "MPTCP" << '\n';
                                     head += head[1];
                                     break;
                                 } else {
-                                    std::cout << "Failure on MPTCP." << '\n';
                                     std::exit(EXIT_FAILURE);
                                 }
                             }
                             default: {
                                 if (tail - head < 2) {
-                                    std::cout << "tail - head < 2." << '\n'; 
                                     std::exit(EXIT_FAILURE);
                                 } else if (tail - head < head[1]) {
                                     std::exit(EXIT_FAILURE);
@@ -344,13 +326,11 @@ namespace pcap {
                     }
                 }
 
-                std::cout << "past data_offset check." << '\n'; 
                 //Increment curr?
                 curr += data_offset * 4;
 
                 //If TCP_data_size > than_some_value print/parse it?
                 //Test printout of TCP data section (assumes regular text).
-                std::cout << "before TCP_data_size check." << '\n'; 
                 if (TCP_data_size > 0) {
                     std::string tcp_data_str = "";
                     uint8_t* head_tcp_data = (uint8_t*)&record.frame[curr];
@@ -407,7 +387,6 @@ namespace pcap {
                 break;
             }
         }
-        std::cout << "'format_TCP_UDP_header()' end" << '\n';
 
         return tcp_udp_s.str();
     }
@@ -428,7 +407,6 @@ namespace pcap {
                     ip.header_chksum = pcap::bswap16(ip.header_chksum);
                 }
                 std::cout << pcap::format_IPv4_header(ip) << '\n';
-                std::cout << "past 'format_IPv4_header()'" << '\n';
 
                 //Extracting IHL value with bit masking.
                 //If IHL > 5 read options field.
