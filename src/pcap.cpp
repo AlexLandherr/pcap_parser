@@ -194,24 +194,22 @@ namespace pcap {
         return IP_s.str();
     }
 
-    /* std::string format_HTTP_header(const pcap::Record &record, int &curr, std::stringstream &tcp_udp_s, const pcap::TCP_Header &tcp, const uint32_t &TCP_data_size) {
+    void format_HTTP_header(const pcap::Record &record, const int &curr, std::stringstream &tcp_udp_s, const uint32_t &TCP_data_size) {
         std::string tcp_data_str = "";
         uint8_t* head_tcp_data = (uint8_t*)&record.frame[curr];
         uint8_t* tail_tcp_data = head_tcp_data + TCP_data_size;
 
-        if (tcp.src_port == 8080 || tcp.dst_port == 8080) {
-            while (head_tcp_data < tail_tcp_data) {
-                if (*head_tcp_data == '\r' || *head_tcp_data == '\n') {
-                    break;
-                } else {
-                    tcp_data_str.push_back(*head_tcp_data);
-                }
+        while (head_tcp_data < tail_tcp_data) {
+            if (*head_tcp_data == '\r' || *head_tcp_data == '\n') {
+                break;
+            } else {
+                tcp_data_str.push_back(*head_tcp_data);
             }
             head_tcp_data += 1;
         }
-
-        return tcp_data_str;
-    } */
+        //head_tcp_data += 1;
+        tcp_udp_s << tcp_data_str;
+    }
 
     std::string format_TCP_UDP_header(const pcap::IPv4_Header &IP_header, const pcap::Record &record, int &curr) {
         std::stringstream tcp_udp_s;
@@ -351,25 +349,9 @@ namespace pcap {
                 //If TCP_data_size > than_some_value print/parse it?
                 //Test printout of TCP data section (assumes regular text).
                 //Replace with function.
-                if (TCP_data_size > 0) {
-                    /* tcp_udp_s << "\nTCP text data:" << '\n';
-                    tcp_udp_s << pcap::format_HTTP_header(record, curr, tcp_udp_s, tcp, TCP_data_size); */
-                    std::string tcp_data_str = "";
-                    uint8_t* head_tcp_data = (uint8_t*)&record.frame[curr];
-                    uint8_t* tail_tcp_data = head_tcp_data + TCP_data_size;
-
-                    if (tcp.src_port == 8080 || tcp.dst_port == 8080) {
-                        while (head_tcp_data < tail_tcp_data) {
-                            if (*head_tcp_data == '\r' || *head_tcp_data == '\n') {
-                                break;
-                            } else {
-                                tcp_data_str.push_back(*head_tcp_data);
-                            }
-                            head_tcp_data += 1;
-                        }
-                        tcp_udp_s << "\nTCP text data:" << '\n';
-                        tcp_udp_s << tcp_data_str; 
-                    }
+                if (TCP_data_size > 0 && (tcp.src_port == 8080 || tcp.dst_port == 8080)) {
+                    tcp_udp_s << "\nTCP text data:" << '\n';
+                    pcap::format_HTTP_header(record, curr, tcp_udp_s, TCP_data_size);
                 }
 
                 tcp_udp_s << "\n******";

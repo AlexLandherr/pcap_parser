@@ -116,7 +116,7 @@ namespace pcap {
     std::string format_eth_header(const pcap::Eth_Header &ethernet_header);
     std::string format_IPv4_header(const pcap::IPv4_Header &IP_header);
 
-    //std::string format_HTTP_header(const pcap::Record &record, int &curr, std::stringstream &tcp_udp_s, const pcap::TCP_Header &tcp, const uint32_t &TCP_data_size);
+    void format_HTTP_header(const pcap::Record &record, const int &curr, std::stringstream &tcp_udp_s, const uint32_t &TCP_data_size);
     std::string format_TCP_UDP_header(const pcap::IPv4_Header &IP_header, const pcap::Record &record, int &curr);
 
     void format_IPv4_IPv6_header(pcap::Eth_Header* eth_header, const pcap::Record &record, int &curr);
