@@ -209,7 +209,6 @@ namespace pcap {
             }
             head_tcp_data += 1;
         }
-        //head_tcp_data += 1;
         tcp_udp_s << tcp_data_str;
     }
 
@@ -225,8 +224,8 @@ namespace pcap {
                     tcp.dst_port = pcap::bswap16(tcp.dst_port);
                     tcp.sequence_num = pcap::bswap32(tcp.sequence_num);
                     tcp.ACK_num = pcap::bswap32(tcp.ACK_num);
-                    //Swap data_offset_reserved?
-                    //Swap flags?
+                    //Don't swap data_offset_reserved.
+                    //Don't swap flags.
                     tcp.window_size = pcap::bswap16(tcp.window_size);
                     tcp.chk_sum = pcap::bswap16(tcp.chk_sum);
                     tcp.urg_pointer = pcap::bswap16(tcp.urg_pointer);
@@ -246,7 +245,7 @@ namespace pcap {
                 tcp_udp_s << "TCP data (bytes): " << TCP_data_size;
                 
                 if (data_offset > 5) {
-                    tcp_udp_s << "\nTCP Options Info: " /* << '\n' */;
+                    tcp_udp_s << "\nTCP Options Info: ";
                     uint8_t* head = (uint8_t*)&tcp + 20;
                     uint8_t* tail = head + ((data_offset - 5) * 4);
 
@@ -345,12 +344,11 @@ namespace pcap {
                     }
                 }
 
-                //Increment curr?
+                //Increment curr.
                 curr += data_offset * 4;
 
-                //If TCP_data_size > than_some_value print/parse it?
-                //Test printout of TCP data section (assumes regular text).
-                //Replace with function.
+                //If TCP_data_size > 0 print/parse it.
+                //Printout/parseout of TCP data section (assumes regular text).
                 if (TCP_data_size > 0 && (tcp.src_port == pcap::ports::TEST_HTTP_PORT_NUM || tcp.dst_port == pcap::ports::TEST_HTTP_PORT_NUM)) {
                     tcp_udp_s << "\nTCP HTTP data:" << '\n';
                     pcap::format_HTTP_header(record, curr, tcp_udp_s, TCP_data_size);
