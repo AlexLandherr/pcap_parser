@@ -412,7 +412,7 @@ namespace pcap {
                     while (head < tail) {
                         switch (*head) {
                             case 0: {
-                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0 /* && (head[0] & 0b11111) == 0 */) {
+                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0) {
                                     std::cout << "End of options list." << '\n';
                                     break;
                                 } else {
@@ -420,7 +420,7 @@ namespace pcap {
                                 }
                             }
                             case 1: {
-                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0 /* && (head[0] & 0b11111) == 1 */) {
+                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0) {
                                     std::cout << "No operation." << '\n';
                                     head += 1;
                                     break;
@@ -433,7 +433,7 @@ namespace pcap {
                                 break;
                             } */
                             case 7: {
-                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0 /* && (head[0] & 0b11111) == 7 */) {
+                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0) {
                                     std::cout << "Record Route." << '\n';
                                     head += head[1];
                                     break;
@@ -447,7 +447,7 @@ namespace pcap {
                                 break;
                             }
                             case 11: {
-                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0 /* && (head[0] & 0b11111) == 11 */) {
+                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0) {
                                     std::cout << "MTUP - MTU Probe." << '\n';
                                     head += head[1];
                                     break;
@@ -456,7 +456,7 @@ namespace pcap {
                                 }
                             }
                             case 12: {
-                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0 /* && (head[0] & 0b11111) == 12 */) {
+                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0) {
                                     std::cout << "MTUR - MTU Reply." << '\n';
                                     head += head[1];
                                     break;
@@ -465,7 +465,7 @@ namespace pcap {
                                 }
                             }
                             case 15: {
-                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0 /* && (head[0] & 0b11111) == 15 */) {
+                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0) {
                                     std::cout << "ENCODE." << '\n';
                                     head += head[1];
                                     break;
@@ -474,7 +474,7 @@ namespace pcap {
                                 }
                             }
                             case 25: {
-                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0 /* && (head[0] & 0b11111) == 25 */) {
+                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0) {
                                     std::cout << "QS - Quick Start." << '\n';
                                     head += head[1];
                                     break;
@@ -483,7 +483,7 @@ namespace pcap {
                                 }
                             }
                             case 30: {
-                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0 /* && (head[0] & 0b11111) == 30 */) {
+                                if (((head[0] >> 7) & 1) == 0 && ((head[0] >> 5) & 0b11) == 0) {
                                     std::cout << "EXP - RFC3692-style Experiment." << '\n';
                                     head += head[1];
                                     break;
