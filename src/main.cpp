@@ -16,7 +16,7 @@
 #include <array>
 
 int main() {
-    //variables for timestamp resolution and data endianness.
+    //Variables for timestamp resolution and data endianness.
     int ts_decimal_places = 0;
     std::endian data_endianness;
 
