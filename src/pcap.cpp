@@ -351,7 +351,7 @@ namespace pcap {
                 //If TCP_data_size > than_some_value print/parse it?
                 //Test printout of TCP data section (assumes regular text).
                 //Replace with function.
-                if (TCP_data_size > 0 && (tcp.src_port == 8080 || tcp.dst_port == 8080)) {
+                if (TCP_data_size > 0 && (tcp.src_port == pcap::ports::TEST_HTTP_PORT_NUM || tcp.dst_port == pcap::ports::TEST_HTTP_PORT_NUM)) {
                     tcp_udp_s << "\nTCP HTTP data:" << '\n';
                     pcap::format_HTTP_header(record, curr, tcp_udp_s, TCP_data_size);
                 }

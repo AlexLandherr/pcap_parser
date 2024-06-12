@@ -23,6 +23,11 @@ namespace pcap {
         MAX_FRAME_SIZE = 1536
     };
 
+    enum ports {
+        HTTP_PORT_NUM = 80,
+        TEST_HTTP_PORT_NUM = 8080
+    };
+
     struct File_Header {
         uint32_t magic_number;
         uint16_t major_version;
