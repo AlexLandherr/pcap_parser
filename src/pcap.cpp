@@ -200,7 +200,9 @@ namespace pcap {
         uint8_t* tail_tcp_data = head_tcp_data + TCP_data_size;
 
         while (head_tcp_data < tail_tcp_data) {
-            if (*head_tcp_data == '\r' || *head_tcp_data == '\n') {
+            //Empty line detection for HTTP/1.1 messages for line that marks end of HTTP header.
+            bool break_point = *head_tcp_data == '\n' && head_tcp_data[1] == '\r';
+            if (break_point) {
                 break;
             } else {
                 tcp_data_str.push_back(*head_tcp_data);
@@ -350,7 +352,7 @@ namespace pcap {
                 //Test printout of TCP data section (assumes regular text).
                 //Replace with function.
                 if (TCP_data_size > 0 && (tcp.src_port == 8080 || tcp.dst_port == 8080)) {
-                    tcp_udp_s << "\nTCP text data:" << '\n';
+                    tcp_udp_s << "\nTCP HTTP data:" << '\n';
                     pcap::format_HTTP_header(record, curr, tcp_udp_s, TCP_data_size);
                 }
 
