@@ -214,6 +214,7 @@ namespace pcap {
             tmp_str = std::string((const char*)head, end - head);
             tcp_data_str += tmp_str + '\n';
             
+            //Moving head pointer to start of next HTTP field.
             head = end + 2;
         }
         tcp_data_str.erase(tcp_data_str.length() - 2, 2);
