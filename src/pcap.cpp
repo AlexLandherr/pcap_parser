@@ -196,19 +196,27 @@ namespace pcap {
 
     void format_HTTP_header(const pcap::Record &record, const int &curr, std::stringstream &tcp_udp_s, const uint32_t &TCP_data_size) {
         std::string tcp_data_str = "";
-        uint8_t* head_tcp_data = (uint8_t*)&record.frame[curr];
-        uint8_t* tail_tcp_data = head_tcp_data + TCP_data_size;
+        uint8_t* head = (uint8_t*)&record.frame[curr];
+        uint8_t* tail = head + TCP_data_size;
+        std::vector<std::string> http_fields;
 
-        while (head_tcp_data < tail_tcp_data) {
-            //Empty line detection for HTTP/1.1 messages for line that marks end of HTTP header.
-            bool break_point = *head_tcp_data == '\n' && head_tcp_data[1] == '\r';
-            if (break_point) {
-                break;
-            } else {
-                tcp_data_str.push_back(*head_tcp_data);
+        while (head < tail) {
+            //Calculate end pointer for single HTTP field.
+            std::string tmp_str = "";
+            uint8_t* tmp_head = head;
+            uint8_t* end = 0;
+            while (!(*tmp_head == '\r' && tmp_head[1] == '\n')) {
+                tmp_head += 1;
             }
-            head_tcp_data += 1;
+            end = tmp_head;
+
+            //Getting single HTTP field/line.
+            tmp_str = std::string((const char*)head, end - head);
+            tcp_data_str += tmp_str + '\n';
+            
+            head = end + 2;
         }
+        tcp_data_str.erase(tcp_data_str.length() - 2, 2);
         tcp_udp_s << tcp_data_str;
     }
 
