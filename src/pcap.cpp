@@ -198,7 +198,6 @@ namespace pcap {
         std::string tcp_data_str = "";
         uint8_t* head = (uint8_t*)&record.frame[curr];
         uint8_t* tail = head + TCP_data_size;
-        std::vector<std::string> http_fields;
 
         while (head < tail) {
             //Calculate end pointer for single HTTP field.
