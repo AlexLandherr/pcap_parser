@@ -1,4 +1,5 @@
 #include "include/pcap.h"
+#include "include/data_formats.h"
 #include <iostream>
 #include <string>
 #include <vector>
@@ -29,7 +30,7 @@ int main() {
         return 1;
     }
 
-    pcap::File_Header fh = pcap::get_file_header(f_stream);
+    data_formats::File_Header fh = pcap::get_file_header(f_stream);
 
     //Determine endianness and ts resolution (decimal places).
     switch (fh.magic_number) {
@@ -85,7 +86,7 @@ int main() {
     while (true) {
         int curr = 0;
         //Print out Packet Records in loop.
-        pcap::Record_Header rh = pcap::get_record_header(f_stream);
+        data_formats::Record_Header rh = pcap::get_record_header(f_stream);
 
         //Swap check.
         if (std::endian::native != data_endianness) {
@@ -96,12 +97,12 @@ int main() {
         }
 
         //Use std::min() to check/set CapLen.
-        rh.CapLen = std::min(rh.CapLen, static_cast<uint32_t>(pcap::MAX_FRAME_SIZE));
+        rh.CapLen = std::min(rh.CapLen, static_cast<uint32_t>(data_formats::MAX_FRAME_SIZE));
 
         //Populating the full record struct by getting the Packet Data field from a Packet Record.
-        pcap::Record record = pcap::get_record(f_stream, rh);
-        pcap::Eth_Header* eth = (pcap::Eth_Header*) &record.frame[curr];
-        curr += sizeof(pcap::Eth_Header);
+        data_formats::Record record = pcap::get_record(f_stream, rh);
+        data_formats::Eth_Header* eth = (data_formats::Eth_Header*) &record.frame[curr];
+        curr += sizeof(data_formats::Eth_Header);
 
         if (std::endian::native != std::endian::big) {
             eth->eth_type = pcap::bswap16(eth->eth_type);

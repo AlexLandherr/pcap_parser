@@ -1,4 +1,5 @@
 #include "include/pcap.h"
+#include "include/data_formats.h"
 #include <string>
 #include <fstream>
 #include <cstdint>
@@ -18,10 +19,10 @@
 #include <cctype>
 
 namespace pcap {
-    pcap::File_Header get_file_header(std::FILE* f_stream) {
-        pcap::File_Header fh_buf;
+    data_formats::File_Header get_file_header(std::FILE* f_stream) {
+        data_formats::File_Header fh_buf;
 
-        const std::size_t n = std::fread(&fh_buf, sizeof(pcap::File_Header), 1, f_stream);
+        const std::size_t n = std::fread(&fh_buf, sizeof(data_formats::File_Header), 1, f_stream);
         if (n != 1) {
             if (std::ferror(f_stream)) {
                 std::cout << "I/O error when reading." << '\n';
@@ -35,10 +36,10 @@ namespace pcap {
         return fh_buf;
     }
 
-    pcap::Record_Header get_record_header(std::FILE* f_stream) {
-        pcap::Record_Header rh_buf;
+    data_formats::Record_Header get_record_header(std::FILE* f_stream) {
+        data_formats::Record_Header rh_buf;
 
-        const std::size_t n = std::fread(&rh_buf, sizeof(pcap::Record_Header), 1, f_stream);
+        const std::size_t n = std::fread(&rh_buf, sizeof(data_formats::Record_Header), 1, f_stream);
         if (n != 1) {
             if (std::ferror(f_stream)) {
                 std::cout << "I/O error when reading." << '\n';
@@ -52,8 +53,8 @@ namespace pcap {
         return rh_buf;
     }
 
-    pcap::Record get_record(std::FILE* f_stream, const pcap::Record_Header &record_header) {
-        pcap::Record r_buf;
+    data_formats::Record get_record(std::FILE* f_stream, const data_formats::Record_Header &record_header) {
+        data_formats::Record r_buf;
         r_buf.header = record_header;
 
         const std::size_t n = std::fread(&r_buf.frame, record_header.CapLen, 1, f_stream);
@@ -76,7 +77,7 @@ namespace pcap {
         return ss.str();
     }
 
-    std::string format_file_header(const pcap::File_Header &file_header, const std::endian &data_endianness, const int &ts_decimal_places) {
+    std::string format_file_header(const data_formats::File_Header &file_header, const std::endian &data_endianness, const int &ts_decimal_places) {
         std::stringstream hs;
         hs << "magic_num: " << pcap::format_uint32_t(file_header.magic_number) << '\n';
         hs << "major_version: " << file_header.major_version << '\n';
@@ -100,7 +101,7 @@ namespace pcap {
         return hs.str();
     }
 
-    std::string format_record_header(const pcap::Record_Header &record_header, const int &ts_decimal_places) {
+    std::string format_record_header(const data_formats::Record_Header &record_header, const int &ts_decimal_places) {
         std::stringstream rs;
         rs << "Unix: " << record_header.ts_seconds << "." << std::setw(ts_decimal_places) << std::setfill('0') << record_header.ts_frac << " ";
         rs << "CapLen: " << record_header.CapLen << " ";
@@ -109,7 +110,7 @@ namespace pcap {
         return rs.str();
     }
 
-    std::string format_eth_header(const pcap::Eth_Header &ethernet_header) {
+    std::string format_eth_header(const data_formats::Eth_Header &ethernet_header) {
         std::stringstream eth_s;
 
         //Get destination & source MAC address.
@@ -151,7 +152,7 @@ namespace pcap {
         return eth_s.str();
     }
 
-    std::string format_IPv4_header(const pcap::IPv4_Header &IP_header) {
+    std::string format_IPv4_header(const data_formats::IPv4_Header &IP_header) {
         std::stringstream IP_s;
 
         IP_s << "IPv" << (uint16_t)((IP_header.version_IHL >> 4) & ((1 << 4) - 1)) << ' ';
@@ -194,7 +195,7 @@ namespace pcap {
         return IP_s.str();
     }
 
-    void format_HTTP_header(const pcap::Record &record, const int &curr, std::stringstream &tcp_udp_s, const uint32_t &TCP_data_size) {
+    void format_HTTP_header(const data_formats::Record &record, const int &curr, std::stringstream &tcp_udp_s, const uint32_t &TCP_data_size) {
         std::string tcp_data_str = "";
         uint8_t* head = (uint8_t*)&record.frame[curr];
         uint8_t* tail = head + TCP_data_size;
@@ -220,13 +221,13 @@ namespace pcap {
         tcp_udp_s << tcp_data_str;
     }
 
-    std::string format_TCP_UDP_header(const pcap::IPv4_Header &IP_header, const pcap::Record &record, int &curr) {
+    std::string format_TCP_UDP_header(const data_formats::IPv4_Header &IP_header, const data_formats::Record &record, int &curr) {
         std::stringstream tcp_udp_s;
 
         switch (IP_header.protocol) {
             case 0x06: {
                 //Printout/extraction of TCP info.
-                pcap::TCP_Header& tcp = *(pcap::TCP_Header*) &record.frame[curr];
+                data_formats::TCP_Header& tcp = *(data_formats::TCP_Header*) &record.frame[curr];
                 if (std::endian::native != std::endian::big) {
                     tcp.src_port = pcap::bswap16(tcp.src_port);
                     tcp.dst_port = pcap::bswap16(tcp.dst_port);
@@ -357,7 +358,7 @@ namespace pcap {
 
                 //If TCP_data_size > 0 print/parse it.
                 //Printout/parseout of TCP data section (assumes regular text).
-                if (TCP_data_size > 0 && (tcp.src_port == pcap::ports::TEST_HTTP_PORT_NUM || tcp.dst_port == pcap::ports::TEST_HTTP_PORT_NUM)) {
+                if (TCP_data_size > 0 && (tcp.src_port == data_formats::ports::TEST_HTTP_PORT_NUM || tcp.dst_port == data_formats::ports::TEST_HTTP_PORT_NUM)) {
                     tcp_udp_s << "\nTCP HTTP data:" << '\n';
                     pcap::format_HTTP_header(record, curr, tcp_udp_s, TCP_data_size);
                 }
@@ -368,7 +369,7 @@ namespace pcap {
             }
             case 0x11: {
                 //Eventual printout/extraction of UDP info.
-                pcap::UDP_header& udp = *(pcap::UDP_header*) &record.frame[curr];
+                data_formats::UDP_header& udp = *(data_formats::UDP_header*) &record.frame[curr];
                 if (std::endian::native != std::endian::big) {
                     udp.src_port = pcap::bswap16(udp.src_port);
                     udp.dst_port = pcap::bswap16(udp.dst_port);
@@ -392,14 +393,14 @@ namespace pcap {
         return tcp_udp_s.str();
     }
 
-    void format_IPv4_IPv6_header(pcap::Eth_Header* eth_header, const pcap::Record &record, int &curr) {
+    void format_IPv4_IPv6_header(data_formats::Eth_Header* eth_header, const data_formats::Record &record, int &curr) {
         //Checking EtherType.
         switch (eth_header->eth_type) {
             case 0x0800: {
                 std::cout << pcap::format_eth_header(*eth_header) << '\n';
                 
                 //Printout/extraction of IPv4 packet info.
-                pcap::IPv4_Header& ip = *(pcap::IPv4_Header*) &record.frame[curr];
+                data_formats::IPv4_Header& ip = *(data_formats::IPv4_Header*) &record.frame[curr];
 
                 if (std::endian::native != std::endian::big) {
                     ip.total_len = pcap::bswap16(ip.total_len);
