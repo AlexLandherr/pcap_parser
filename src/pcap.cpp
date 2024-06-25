@@ -697,7 +697,7 @@ namespace pcap {
             }
             case 0x86DD: {
                 std::cout << pcap::format_eth_header(*eth_header) << '\n';
-                //Eventual printout/extraction of IP packet info.
+                //Eventual printout/extraction of IPv6 packet info.
                 break;
             }
             default: {
