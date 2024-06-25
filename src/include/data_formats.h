@@ -69,17 +69,14 @@ namespace data_formats {
         uint32_t dst_addr;
     };
 
-    /* struct IPv6_Header {
-        std::bitset<4> version;
-        std::bitset<6> diff_serv;
-        std::bitset<2> ECN;
-        std::bitset<20> flow_label;
+    struct IPv6_Header {
+        uint32_t version_diffserv_ECN_flow_label;
         uint16_t payload_length;
-        uint8_t next_header; Same function as 'Protocol' field in IPv4.
-        uint8_t hop_limit; Same as TTL in IPv4.
+        uint8_t next_header; //Same function as 'Protocol' field in IPv4.
+        uint8_t hop_limit; //Same as TTL in IPv4.
         std::bitset<128> src_addr;
         std::bitset<128> dst_addr;
-    }; */
+    };
 
     struct TCP_Header {
         uint16_t src_port;
