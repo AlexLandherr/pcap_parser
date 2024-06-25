@@ -377,9 +377,13 @@ namespace pcap {
                     udp.chk_sum = pcap::bswap16(udp.chk_sum);
                 }
 
+                //Calculate UDP payload data size.
+                uint16_t UDP_payload_size = udp.length - 8; //8 bytes is the minimum UDP datagram size.
+
                 tcp_udp_s << "UDP_src_port: " << udp.src_port << ' ';
                 tcp_udp_s << "UDP_dst_port: " << udp.dst_port << ' ';
                 tcp_udp_s << "Length (header + data): " << udp.length << ' ';
+                tcp_udp_s << "Payload size: " << UDP_payload_size << ' ';
                 tcp_udp_s << "chk_sum: " << udp.chk_sum;
                 
                 break;
