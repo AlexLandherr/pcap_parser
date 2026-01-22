@@ -6,6 +6,7 @@
 #include <fstream>
 #include <array>
 #include <cstdio>
+#include <cstdint>
 
 #ifndef DATA_FORMATS_H
 #define DATA_FORMATS_H

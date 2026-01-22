@@ -21,7 +21,7 @@ int main() {
     int ts_decimal_places = 0;
     std::endian data_endianness;
 
-    std::string filename{"pcap_files/chargen-udp.pcap"};
+    std::string filename{"pcap_files/chargen-tcp.pcap"};
 
     //File stream for entire program.
     std::FILE* f_stream = std::fopen(filename.c_str(), "rb");
